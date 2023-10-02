@@ -8,4 +8,4 @@ cd studing
 git checkout cloud_lab_1
 
 sudo python -m pip install -r ./requirements.txt
-sudo python main.py
+sudo python main.py &
