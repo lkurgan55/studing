@@ -1,11 +1,13 @@
 #!/bin/bash
 
-sudo dnf update
-sudo dnf install python pip git -y
+sudo apt-get update
+sudo apt-get upgrade -y
+sudo apt-get install python3 python3-pip git --yes --force-yes
 
-git clone https://github.com/lkurgan55/studing.git
+sudo git clone https://github.com/lkurgan55/studing.git
 cd studing
-git checkout cloud_lab_1
+sudo git checkout cloud_lab_1
 
-sudo python -m pip install -r ./requirements.txt
-sudo python main.py &
+sudo python3 -m pip install -r ./requirements.txt
+sudo crontab -l | { cat; sudo echo "@reboot python3 /studing/main.py"; } | crontab -
+sudo python3 /studing/main.py &
