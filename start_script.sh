@@ -2,7 +2,7 @@
 
 sudo apt-get update
 sudo apt-get upgrade -y
-sudo apt-get install python3 python3-pip git --yes --force-yes
+sudo apt-get install python3 python3-pip git -y
 
 sudo git clone https://github.com/lkurgan55/studing.git
 cd studing
