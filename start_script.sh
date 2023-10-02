@@ -1,3 +1,5 @@
+#!/bin/bash
+
 sudo dnf update
 sudo dnf install python pip git -y
 
