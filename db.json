@@ -1,0 +1,39 @@
+{
+    "current_id": 7,
+    "1": {
+        "name": "pivo",
+        "category": "food",
+        "amout": 29.99,
+        "descriptiom": "lolkek"
+    },
+    "2": {
+        "name": "sushi",
+        "category": "food",
+        "amout": 50.6,
+        "descriptiom": "lolkek"
+    },
+    "3": {
+        "name": "sushi",
+        "category": "food",
+        "amout": 50.6,
+        "descriptiom": "keklol"
+    },
+    "4": {
+        "name": "sushi",
+        "category": "food",
+        "amout": 50.6,
+        "descriptiom": "lolkek"
+    },
+    "5": {
+        "name": "sushi",
+        "category": "food",
+        "amout": 50.6,
+        "descriptiom": "lolkek"
+    },
+    "6": {
+        "name": "sushi",
+        "category": "food",
+        "amout": 50.6,
+        "descriptiom": "lolkek"
+    }
+}
