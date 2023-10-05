@@ -1,3 +1,4 @@
 _*
 secret.env
 .DS_Store
+db.json
