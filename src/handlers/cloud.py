@@ -1,10 +1,16 @@
 import boto3
+import os
 
 
 class Cloud:
     def __init__(self, bucket_name: str) -> None:
         self.bucket_name = bucket_name
-        self.client = boto3.client('s3')
+        self.client = boto3.client(
+            's3',
+            aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+            aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+            region_name=os.environ['AWS_DEFAULT_REGION']
+        )
 
     def check_file_exist(self, file_name) -> bool:
         results = self.client.list_objects(
