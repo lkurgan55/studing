@@ -22,7 +22,7 @@ class DB:
             self._save_db_file()
 
     def _check_file_exist(self) -> bool:	
-        return self.db_file in {file_obj.key for file_obj in self.Bucket(self.bucket_name).objects.all()}
+        return self.db_file in {file_obj.key for file_obj in self.s3.Bucket(self.bucket_name).objects.all()}
 
     def _get_file(self):	
         self.data = json.loads(self.s3object.get()['Body'].read().decode('utf-8')) 
