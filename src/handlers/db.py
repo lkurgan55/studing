@@ -9,21 +9,11 @@ class DB:
 
         if os.path.isfile(self.db_file_path):
             self._read_db_file()
-        elif False: # add S3 download
-            self._get_s3_data()
-            self._read_db_file()
         else:
             self._save_db_file()
 
     def shutdown(self):
         self._save_db_file()
-        self._save_s3_data()
-
-    def _get_s3_data(self):
-        pass
-
-    def _save_s3_data(self):
-        pass
 
     def _read_db_file(self):
         with open(self.db_file_path, 'r') as data_file:
