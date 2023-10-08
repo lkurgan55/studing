@@ -28,7 +28,7 @@ class DB:
         self.data = json.loads(self.s3object.get()['Body'].read().decode('utf-8')) 
 
     def _save_db_file(self):	
-        self.s3object.put(Body=(bytes(json.dumps(self.data).encode('UTF-8'))))
+        self.s3object.put(Body=(bytes(json.dumps(self.data, indent=4).encode('UTF-8'))))
 
     def shutdown(self):
         self._save_db_file()
