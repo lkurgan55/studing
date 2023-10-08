@@ -32,7 +32,7 @@ app.include_router(crud_endpoints, prefix="/crud", tags=['crud_endpoints'])
 
 @app.on_event('startup')
 def startup():
-   app.db = DB('db.json', 'cloud-lab-2-leo')
+   app.db = DB('cloud-lab-2-leo', 'db.json')
 
 @app.on_event('shutdown')
 def shutdown():
