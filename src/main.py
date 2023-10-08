@@ -32,11 +32,11 @@ app.include_router(crud_endpoints, prefix="/crud", tags=['crud_endpoints'])
 
 @app.on_event('startup')
 def startup():
-   app.db = DB('db.json')
+   app.db = DB('/db.json')
 
 @app.on_event('shutdown')
 def shutdown():
-   app.cloud.save_file('db.json')
+   app.db.shutdown()
 
 @app.get("/")
 def read_root():

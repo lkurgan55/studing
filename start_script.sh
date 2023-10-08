@@ -4,8 +4,7 @@ sudo apt-get update
 sudo apt-get upgrade -y
 sudo apt-get install python3 python3-pip git -y
 
-sudo git clone https://github.com/lkurgan55/studing.git
-sudo git checkout cloud_lab_2
+sudo git clone -b cloud_lab_2 https://github.com/lkurgan55/studing.git
 
 sudo python3 -m pip install -r ./studing/requirements.txt
 
