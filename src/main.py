@@ -7,7 +7,6 @@ from fastapi import Depends, FastAPI, APIRouter
 
 from schema.record import Record, UpdateRecord
 from handlers.db import DB
-from handlers.cloud import Cloud
 
 
 crud_endpoints = APIRouter()
