@@ -34,11 +34,13 @@ class DB:
         self._save_db_file()
 
     def get_record(self, id='all') -> dict:
+        self._get_file()
         if id == 'all':
             return self.data
         return self.data.get(id, None)
 
     def del_record(self, id = 'all') -> bool:
+        self._get_file()
         if id == 'all':
             self.data = {'current_id': 1}
             result = True
@@ -48,12 +50,14 @@ class DB:
         return bool(result)
 
     def add_record(self, record) -> int:
+        self._get_file()
         self.data[str(self.data['current_id'])] = record
         self.data['current_id'] += 1
         self._save_db_file()
         return self.data['current_id'] - 1
 
     def update_record(self, id: int, new_data: dict) -> bool:
+        self._get_file()
         if self.data.get(id):
             update_data = {k: v for k, v in new_data.items() if v is not None}
             self.data[id].update(update_data)
