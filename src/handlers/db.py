@@ -1,28 +1,37 @@
 import os
 import json
+import boto3	
+
 
 class DB:
 
-    def __init__(self, db_file_path) -> None:
-        self.db_file_path = db_file_path 
-        self.data = {'current_id': 1}
+    def __init__(self, bucket_name: str, db_file: str) -> None:
+        self.bucket_name = bucket_name	
+        self.db_file = db_file
 
-        if os.path.isfile(self.db_file_path):
-            self._read_db_file()
+        self.s3 = boto3.resource(
+            's3',	
+            aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],	
+            aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY']
+        )
+        self.s3object = self.s3.Object(self.bucket_name, self.db_file)
+        if self._check_file_exist():
+            self._get_file()
         else:
+            self.data = {'current_id': 1}
             self._save_db_file()
+
+    def _check_file_exist(self) -> bool:	
+        return self.db_file in {file_obj.key for file_obj in self.Bucket(self.bucket_name).objects.all()}
+
+    def _get_file(self):	
+        self.data = json.loads(self.s3object.get()['Body'].read().decode('utf-8')) 
+
+    def _save_db_file(self):	
+        self.s3object.put(Body=(bytes(json.dumps(self.data).encode('UTF-8'))))
 
     def shutdown(self):
         self._save_db_file()
-
-    def _read_db_file(self):
-        with open(self.db_file_path, 'r') as data_file:
-            self.data = json.load(data_file)
-        if self.data: return True
-
-    def _save_db_file(self):
-        with open(self.db_file_path, "w") as data_file:
-            json.dump(self.data, data_file, indent=4)
 
     def get_record(self, id='all') -> dict:
         if id == 'all':

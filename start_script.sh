@@ -6,6 +6,9 @@ sudo apt-get install python3 python3-pip git -y
 
 sudo git clone -b cloud_lab_2 https://github.com/lkurgan55/studing.git
 
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+
 sudo python3 -m pip install -r ./studing/requirements.txt
 
 sudo crontab -l | { cat; sudo echo "@reboot sudo -E python3 /studing/src/main.py"; } | crontab -

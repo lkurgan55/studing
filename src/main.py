@@ -7,6 +7,7 @@ from fastapi import Depends, FastAPI, APIRouter
 
 from schema.record import Record, UpdateRecord
 from handlers.db import DB
+from handlers.cloud import Cloud
 
 
 crud_endpoints = APIRouter()
@@ -32,11 +33,15 @@ app.include_router(crud_endpoints, prefix="/crud", tags=['crud_endpoints'])
 
 @app.on_event('startup')
 def startup():
+   app.cloud = Cloud('cloud-lab-2-leo')	
+   if app.cloud.check_file_exist('db.json'):	
+      app.cloud.get_file('/db.json')
    app.db = DB('/db.json')
 
 @app.on_event('shutdown')
 def shutdown():
    app.db.shutdown()
+   app.cloud.save_file('db.json')
 
 @app.get("/")
 def read_root():
