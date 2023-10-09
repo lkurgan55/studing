@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, date
+import configparser
 
 import uvicorn
 from fastapi.responses import RedirectResponse
@@ -32,7 +33,14 @@ app.include_router(crud_endpoints, prefix="/crud", tags=['crud_endpoints'])
 
 @app.on_event('startup')
 def startup():
-   app.db = DB('cloud-lab-2-leo', 'db.json')
+   config = configparser.ConfigParser()
+   config.read('/studing/config.ini')
+   app.db = DB(
+      config['AWS']['aws_access_key_id'],
+      config['AWS']['aws_secret_access_key'],
+      'cloud-lab-2-leo', 
+      'db.json'
+   )
 
 @app.on_event('shutdown')
 def shutdown():

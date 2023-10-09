@@ -1,18 +1,17 @@
-import os
 import json
 import boto3	
 
 
 class DB:
 
-    def __init__(self, bucket_name: str, db_file: str) -> None:
+    def __init__(self, aws_access_key_id, aws_secret_access_key, bucket_name: str, db_file: str) -> None:
         self.bucket_name = bucket_name	
         self.db_file = db_file
 
         self.s3 = boto3.resource(
             's3',	
-            aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],	
-            aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY']
+            aws_access_key_id=aws_access_key_id,	
+            aws_secret_access_key=aws_secret_access_key
         )
         self.s3object = self.s3.Object(self.bucket_name, self.db_file)
         if self._check_file_exist():
