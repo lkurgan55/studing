@@ -1,0 +1,3 @@
+remove 'all', if None return all
+change dict to array in responses
+Check sync and async mode with boto3
