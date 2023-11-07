@@ -2,41 +2,35 @@ from mrjob.job import MRJob, MRStep
 import os
 import re
 
-WORD_RE = re.compile(r"[\w']+")
 
-
-class  MRInvertedIndex(MRJob):
+class MRInvertedIndex(MRJob):
 
     def __init__(self, *args, **kwargs):
         super(MRInvertedIndex, self).__init__(*args, **kwargs)
 
     def read_files(self, _, file_name):
         line_offset = 0
-        file = open(file_name)
+        file = open(original_path + '/' + file_name)
         for line in file:
             yield(file_name, (line.strip(), line_offset))
             line_offset += len(line)
-    
-    def find_words(self, filename, line):
+
+    def find_words(self, filename, line): # map слово його входження в файлі
         for word in [
                 (word.group().lower(), word.start()) 
-                for word in re.finditer(r'\S+', line[0])
+                for word in re.finditer(r'\w+', line[0])
             ]:
             yield (word[0], f"{filename}@{line[1] + word[1]}   {line[0]}")
-    
-    def posting_lists(self, word, data):
+
+    def prepare_result(self, word, data): # reduce слово - список його індексів
         yield (word, list(data))
 
     def steps(self):
-        # This function specifies the process pipeline. In this case we have a two-phases map-reduce process. 
-        # The first phase process the input files and creates an entry per each file line. The second phase 
-        # processes the lines and build the inverted index. The first process only has a mapper function,
-        # while the second one has both mapper and reducer.
         return [
-            MRStep(mapper=self.read_files),
-            MRStep(mapper=self.find_words, reducer=self.posting_lists)
+            MRStep(mapper=self.read_files), # крок 1 - зчитування файлів
+            MRStep(mapper=self.find_words, reducer=self.prepare_result) # крок 2 - обробка слів
         ]
 
 if __name__ == '__main__':
+    original_path = os.getcwd()
     MRInvertedIndex.run()
-
