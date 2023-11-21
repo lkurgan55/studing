@@ -1,1 +1,2 @@
-spark-submit .\main.py
+python producer.py
+python consumer.py
