@@ -34,7 +34,7 @@ app.include_router(crud_endpoints, prefix="/crud", tags=['crud_endpoints'])
 @app.on_event('startup')
 def startup():
    config = configparser.ConfigParser()
-   config.read('./config.ini')
+   config.read('/studing/config.ini')
    app.db = DB(
       config['AWS']['aws_access_key_id'],
       config['AWS']['aws_secret_access_key'],
