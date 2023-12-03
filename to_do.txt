@@ -1,3 +1,4 @@
-remove 'all', if None return all
-change dict to array in responses
-Check sync and async mode with boto3
+remove 'all', if None return all - fixed
+change dict to array in responses - fixed
+Check sync and async mode with boto3 - unicorn working in parallel mode
+And there is aioboto3

@@ -14,11 +14,11 @@ crud_endpoints = APIRouter()
 app = FastAPI()
 
 @crud_endpoints.get("/get_records")
-def get_records(record_id: str = 'all'): 
+def get_records(record_id: str = None): 
    return app.db.get_record(record_id)
 
 @crud_endpoints.delete("/del_records")
-def del_records(record_id: str = 'all'):
+def del_records(record_id: str = None):
    return app.db.del_record(record_id)
 
 @crud_endpoints.put("/add_record")
@@ -34,7 +34,7 @@ app.include_router(crud_endpoints, prefix="/crud", tags=['crud_endpoints'])
 @app.on_event('startup')
 def startup():
    config = configparser.ConfigParser()
-   config.read('/studing/config.ini')
+   config.read('./config.ini')
    app.db = DB(
       config['AWS']['aws_access_key_id'],
       config['AWS']['aws_secret_access_key'],

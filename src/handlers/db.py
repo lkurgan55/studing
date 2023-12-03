@@ -32,15 +32,16 @@ class DB:
     def shutdown(self):
         self._save_db_file()
 
-    def get_record(self, id='all') -> dict:
+    def get_record(self, id = None) -> dict:
         self._get_file()
-        if id == 'all':
-            return self.data
-        return self.data.get(id, None)
+        if id is None:
+            print(self.data)
+            return [{k: v} for k, v in self.data.items() if k != 'current_id']
+        return [{id: self.data.get(id, None)}]
 
-    def del_record(self, id = 'all') -> bool:
+    def del_record(self, id = None) -> bool:
         self._get_file()
-        if id == 'all':
+        if id is None:
             self.data = {'current_id': 1}
             result = True
         else:
