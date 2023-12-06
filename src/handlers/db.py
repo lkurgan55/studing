@@ -1,67 +1,66 @@
 import json
-import boto3	
-
+import sqlalchemy
+from sqlalchemy import text, select, insert, delete, update, \
+Table, Column, Integer, String, Float, MetaData
 
 class DB:
 
-    def __init__(self, aws_access_key_id, aws_secret_access_key, bucket_name: str, db_file: str) -> None:
-        self.bucket_name = bucket_name	
-        self.db_file = db_file
-
-        self.s3 = boto3.resource(
-            's3',	
-            aws_access_key_id=aws_access_key_id,	
-            aws_secret_access_key=aws_secret_access_key
+    def __init__(self, db_url: str) -> None:
+        self.engine = sqlalchemy.create_engine(url=db_url, echo=True)
+        self.connection = self.engine.connect()
+        metadata_obj = MetaData()
+        self.table_name = 'records'
+        self.table = Table(
+            "records",
+            metadata_obj,
+            Column("id", Integer, primary_key=True),
+            Column("name", String(30)),
+            Column("category", String),
+            Column("amout", Float),
+            Column("description", String)
         )
-        self.s3object = self.s3.Object(self.bucket_name, self.db_file)
-        if self._check_file_exist():
-            self._get_file()
-        else:
-            self.data = {'current_id': 1}
-            self._save_db_file()
+        self._check_table_exist()
 
-    def _check_file_exist(self) -> bool:	
-        return self.db_file in {file_obj.key for file_obj in self.s3.Bucket(self.bucket_name).objects.all()}
-
-    def _get_file(self):	
-        self.data = json.loads(self.s3object.get()['Body'].read().decode('utf-8')) 
-
-    def _save_db_file(self):	
-        self.s3object.put(Body=(bytes(json.dumps(self.data, indent=4).encode('UTF-8'))))
+    def _check_table_exist(self) -> bool:
+        sql_query = f"""CREATE TABLE IF NOT EXISTS {self.table_name} (
+                id              SERIAL      	PRIMARY KEY,
+                name            VARCHAR(50)     NULL,
+                category        VARCHAR(50)     NULL,
+                amout           REAL            NULL, 
+                description     VARCHAR(255)    NULL
+            );"""
+        self.connection.execute(text(sql_query))
+        self.connection.commit()
 
     def shutdown(self):
-        self._save_db_file()
+        pass
 
     def get_record(self, id = None) -> dict:
-        self._get_file()
         if id is None:
-            print(self.data)
-            return [{k: v} for k, v in self.data.items() if k != 'current_id']
-        return [{id: self.data.get(id, None)}]
+            query = select(self.table)
+        else:        
+            query = select(self.table).where(self.table.c.id == int(id))
+        result = self.connection.execute(query)
+
+        return [row for row in list(result.mappings().all())]
 
     def del_record(self, id = None) -> bool:
-        self._get_file()
         if id is None:
-            self.data = {'current_id': 1}
-            result = True
-        else:
-            result = self.data.pop(id, None)
-        self._save_db_file()
-        return bool(result)
+            query = text(f"TRUNCATE TABLE {self.table_name}")
+        else:        
+            query = delete(self.table).where(self.table.c.id == int(id))
+        
+        self.connection.execute(query)
+        self.connection.commit()
 
     def add_record(self, record) -> int:
-        self._get_file()
-        self.data[str(self.data['current_id'])] = record
-        self.data['current_id'] += 1
-        self._save_db_file()
-        return self.data['current_id'] - 1
+        query = insert(self.table).values(
+            **record
+        )
+        self.connection.execute(query)
+        self.connection.commit()
 
     def update_record(self, id: int, new_data: dict) -> bool:
-        self._get_file()
-        if self.data.get(id):
-            update_data = {k: v for k, v in new_data.items() if v is not None}
-            self.data[id].update(update_data)
-        else:
-            return False
-        self._save_db_file()
-        return True
+        query = update(self.table).where(self.table.c.id == id).values(**{k:v for k,v in new_data.items() if v is not None})
+        self.connection.execute(query)
+        self.connection.commit()

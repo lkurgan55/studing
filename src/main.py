@@ -1,5 +1,3 @@
-import json
-from datetime import datetime, date
 import configparser
 
 import uvicorn
@@ -14,11 +12,11 @@ crud_endpoints = APIRouter()
 app = FastAPI()
 
 @crud_endpoints.get("/get_records")
-def get_records(record_id: str = None): 
+def get_records(record_id: int = None): 
    return app.db.get_record(record_id)
 
 @crud_endpoints.delete("/del_records")
-def del_records(record_id: str = None):
+def del_records(record_id: int = None):
    return app.db.del_record(record_id)
 
 @crud_endpoints.put("/add_record")
@@ -26,7 +24,7 @@ def add_record(record: Record = Depends()):
    return app.db.add_record(record.dict())
 
 @crud_endpoints.put("/update_record")
-def update_record(record_id: str, record: UpdateRecord = Depends()):
+def update_record(record_id: int, record: UpdateRecord = Depends()):
    return app.db.update_record(record_id, record.dict())
 
 app.include_router(crud_endpoints, prefix="/crud", tags=['crud_endpoints'])
@@ -36,10 +34,7 @@ def startup():
    config = configparser.ConfigParser()
    config.read('/studing/config.ini')
    app.db = DB(
-      config['AWS']['aws_access_key_id'],
-      config['AWS']['aws_secret_access_key'],
-      'cloud-lab-2-leo', 
-      'db.json'
+      config['DB']['db_url']
    )
 
 @app.on_event('shutdown')

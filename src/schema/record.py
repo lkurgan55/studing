@@ -14,7 +14,7 @@ class Record(BaseModel):
     name: str
     category: Category
     amout: float
-    descriptiom: str | None = None
+    description: str | None = None
     
     @validator("category")
     def get_value(cls, value):
@@ -25,7 +25,7 @@ class UpdateRecord(BaseModel):
     name: str | None = None
     category: Category | None = None
     amout: float | None = None
-    descriptiom: str | None = None
+    description: str | None = None
     
     @validator("category")
     def get_value(cls, value):
