@@ -19,7 +19,7 @@ def get_records(record_id: int = None):
 def del_records(record_id: int = None):
    return app.db.del_record(record_id)
 
-@crud_endpoints.put("/add_record")
+@crud_endpoints.post("/add_record")
 def add_record(record: Record = Depends()):
    return app.db.add_record(record.dict())
 
