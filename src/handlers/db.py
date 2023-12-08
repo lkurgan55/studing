@@ -61,6 +61,6 @@ class DB:
         self.connection.commit()
 
     def update_record(self, id: int, new_data: dict) -> bool:
-        query = update(self.table).where(self.table.c.id == id).values(**{k:v for k,v in new_data.items() if v is not None})
+        query = update(self.table).where(self.table.c.id == id).values(**new_data)
         self.connection.execute(query)
         self.connection.commit()
