@@ -64,3 +64,19 @@ class DB:
         query = update(self.table).where(self.table.c.id == id).values(**new_data)
         self.connection.execute(query)
         self.connection.commit()
+
+    def get_total_by_category(self, category: str = None) -> dict:
+        if category:
+            query = f"""
+                select category, SUM(total) from (select category, amout as total from records
+                where category = '{category}') as T
+                group by category;
+            """
+        else:
+            query = f"""
+                select category, SUM(amout) as total from records
+                GROUP BY category;
+            """
+        result = self.connection.execute(text(query))
+
+        return [row for row in list(result.mappings().all())]

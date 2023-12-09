@@ -4,11 +4,12 @@ import uvicorn
 from fastapi.responses import RedirectResponse
 from fastapi import Depends, FastAPI, APIRouter
 
-from schema.record import Record, UpdateRecord
+from schema.record import Record, UpdateRecord, Category
 from handlers.db import DB
 
 
 crud_endpoints = APIRouter()
+endpoints = APIRouter()
 app = FastAPI()
 
 @crud_endpoints.get("/get_records")
@@ -27,7 +28,12 @@ def add_record(record: Record = Depends()):
 def update_record(record_id: int, record: UpdateRecord = Depends()):
    return app.db.update_record(record_id, record.dict())
 
+@endpoints.get("/get_total_by_category")
+def get_total_by_category(category: Category = None): 
+   return app.db.get_total_by_category(category.value if category else None)
+
 app.include_router(crud_endpoints, prefix="/crud", tags=['crud_endpoints'])
+app.include_router(endpoints, prefix="/endpoints", tags=['endpoints'])
 
 @app.on_event('startup')
 def startup():
