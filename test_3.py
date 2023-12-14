@@ -5,7 +5,8 @@ def test(data, comm):
     size = comm.Get_size()
 
     partner = (rank + 1) % size
-    received_data = comm.sendrecv(data, dest=partner, source=partner) # Блокуючий обмін даними між процесами
+
+    received_data = comm.sendrecv(data, dest=partner, source=partner)
 
     print(
         f"""
@@ -18,6 +19,6 @@ if __name__ == "__main__":
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
 
-    data_to_exchange = f"Data from process {rank}"
+    data_to_exchange = [rank, rank + 1, rank + 2]
 
     test(data_to_exchange, comm)
