@@ -1,1 +1,0 @@
-docker-compose up --build --scale calculator=3
