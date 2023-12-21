@@ -6,7 +6,7 @@ def main(file_path_1, file_path_2):
     with open(file_path_2, 'r', encoding='utf-8') as file:
             text2 = file.read()
 
-    k = 10  # Розмір шинглу
+    k = 5  # Розмір шинглу
 
     cleaned_text1 = clean_text(text1)
     cleaned_text2 = clean_text(text2)
