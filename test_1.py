@@ -1,23 +1,19 @@
 from mpi4py import MPI
 
-def test(data, comm):
-    rank = comm.Get_rank()
-    size = comm.Get_size()
-
-    partner = (rank + 1) % size
-    received_data = comm.sendrecv(data, dest=partner, source=partner) # Блокуючий обмін даними між процесами
-
-    print(
-        f"""
-          Process {rank}: Sent data {data} to process {partner},
-          Received data '{received_data}' from process {partner}
-        """
-    )
-
-if __name__ == "__main__":
+def main():
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
 
-    data_to_exchange = f"Data from process {rank}"
+    send_data = f"Hello from process {rank}"
 
-    test(data_to_exchange, comm)
+    # Буфер для отримання даних
+    recv_data = None
+
+    # Широкомовний обмін даними
+    recv_data = comm.bcast(send_data, root=0)
+
+    # Виведення результатів
+    print(f"Process {rank} received: {recv_data}")
+
+if __name__ == "__main__":
+    main()

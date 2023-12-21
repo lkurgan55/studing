@@ -1,24 +1,20 @@
 from mpi4py import MPI
 
-def test(data, comm):
-    rank = comm.Get_rank()
-    size = comm.Get_size()
-    received_data = bytearray(data)
-    partner = (rank + 1) % size
-
-    send_request = comm.Isend(data, dest=partner)
-    recv_request = comm.Irecv(received_data, source=partner)
-
-    print(f"Process {rank} send data and waiting for data continues working.")
-
-    MPI.Request.Waitall([send_request, recv_request])
-
-    print(f"""Process {rank} received data {received_data} from process {partner}""")
-
-if __name__ == "__main__":
+def main():
+    # Ініціалізація MPI
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
 
-    data_to_exchange = f"Data from process {rank}".encode()
+    # Дані для обміну
+    send_data = rank + 1
 
-    test(data_to_exchange, comm)
+    # Буфер для отримання результату reduce
+    result = None
+    print(f"Process {rank} send data: {send_data}")
+    result = comm.reduce(send_data, op=MPI.SUM, root=0)
+
+    if rank == 0:
+        print(f"Process {rank} reduced result: {result}")
+
+if __name__ == "__main__":
+    main()
