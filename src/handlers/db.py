@@ -80,3 +80,4 @@ class DB:
         result = self.connection.execute(text(query))
 
         return [row for row in list(result.mappings().all())]
+    
