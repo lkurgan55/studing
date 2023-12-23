@@ -12,19 +12,19 @@ crud_endpoints = APIRouter()
 endpoints = APIRouter()
 app = FastAPI()
 
-@crud_endpoints.get("/get_records")
-def get_records(record_id: int = None): 
+@crud_endpoints.get("/record")
+def get_record(record_id: int = None): 
    return app.db.get_record(record_id)
 
-@crud_endpoints.delete("/del_records")
-def del_records(record_id: int = None):
+@crud_endpoints.delete("/record")
+def del_record(record_id: int = None):
    return app.db.del_record(record_id)
 
-@crud_endpoints.post("/add_record")
+@crud_endpoints.post("/record")
 def add_record(record: Record = Depends()):
    return app.db.add_record(record.dict())
 
-@crud_endpoints.put("/update_record")
+@crud_endpoints.put("/record")
 def update_record(record_id: int, record: UpdateRecord = Depends()):
    return app.db.update_record(record_id, record.dict())
 
