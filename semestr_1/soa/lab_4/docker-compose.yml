@@ -1,0 +1,35 @@
+services:
+  api:
+    build: api
+    ports:
+      - "80:80"
+    depends_on:
+      - nginx
+
+  calculator:
+    build: calculator
+    expose:
+      - "81"
+    deploy:
+      mode: replicated
+      replicas: 2
+  
+  logger:
+    build: logger
+    expose:
+      - "3000"
+    volumes:
+      - ./logger/log.txt:/server/logs.txt
+    deploy:
+      mode: replicated
+      replicas: 2
+
+  nginx:
+      build: nginx
+      ports:
+          - 8080:8080
+          - 3000:3000
+      depends_on:
+          - calculator
+          - logger
+

@@ -1,0 +1,12 @@
+Host: ce1d2d1724be data: calculator: 7401d211d4e8, result: 5+5-2 = 8
+Host: 088c0f64e8e1 data: calculator: 468d1f98b008, result: 5+5+3 = 13
+Host: ce1d2d1724be data: calculator: ccfbd2af8b79, result: 5+11 = 16
+Host: 088c0f64e8e1 data: calculator: 468d1f98b008, result: 5+5-5 = 5
+Host: ce1d2d1724be data: calculator: 7401d211d4e8, result: 5+5/5 = 6.0
+Host: ce1d2d1724be data: calculator: 7401d211d4e8, result: 5+5-10 = 0
+Host: ce1d2d1724be data: calculator: ccfbd2af8b79, result: 5+5-3 = 7
+Host: 088c0f64e8e1 data: calculator: 468d1f98b008, result: 5+5 = 10
+Host: 088c0f64e8e1 data: calculator: ccfbd2af8b79, result: 5+5//5 = 6
+Host: 088c0f64e8e1 data: calculator: ccfbd2af8b79, result: (5+5)*8 = 80
+Host: 088c0f64e8e1 data: calculator: 468d1f98b008, result: 5+5%3 = 7
+Host: ce1d2d1724be data: calculator: 7401d211d4e8, result: 5+5-3 = 7
