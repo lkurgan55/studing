@@ -1,0 +1,21 @@
+curl localhost:8098/no_bucket/no_key
+
+curl localhost:8098/buckets/cars/keys/matiz -X PUT -H Content-Type:application/json -d '{"props":{"n_val":5,"r":1,"w":5}}'
+
+curl localhost:8098/buckets?buckets=true
+
+curl -X PUT http://localhost:8098/buckets/cars/keys/matiz\?returnbody\=true -H "Content-Type: text/plain" -d "It is cool car"
+
+curl http://localhost:8098/buckets/cars/keys/matiz
+
+curl -X PUT http://localhost:8098/buckets/cars/keys/matiz -H "Content-Type: image/jpeg" --data-binary '@matiz_1.jpg'
+
+curl -X POST http://localhost:8098/riak/cars -H "Content-Type: application/pdf" --data-binary '@text.pdf'
+
+curl -X PUT http://localhost:8098/riak/test_bucket/first -H "content-type:text/plain" -H 'Link: </riak/test_bucket/second>; riaktag="test"' --data "the first"
+
+curl -X PUT http://localhost:8098/riak/test_bucket/second -H "content-type: text/plain" -H 'Link:</riak/test_bucket/third>; riaktag="test"' --data "the second"
+
+curl -X PUT http://localhost:8098/riak/test_bucket/third -H "content-type: text/plain" --data "the third"
+
+curl http://localhost:8098/riak/test_bucket/first/_,_,_

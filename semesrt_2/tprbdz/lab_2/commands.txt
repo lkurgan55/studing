@@ -1,0 +1,144 @@
+curl -X GET http://localhost:9200/_cluster/health\?pretty
+
+curl -X GET http://localhost:9200/_cat/nodes\?v
+
+curl -X PUT http://localhost:9200/test_index
+
+curl -X GET http://localhost:9200/_cat/indices\?v
+
+curl -X GET http://localhost:9200/_cat/shards/test_index\?v
+
+curl -X POST http://localhost:9200/test_index/_doc/test_documet \
+ -H 'Content-Type: application/json' \
+ -d '
+{
+  "title": "Fisrt Test",
+  "content": "Test test test test",
+  "tags": [
+    "test",
+    "first test"
+  ]
+}'
+
+curl -X PUT http://localhost:9200/test_index/_doc/test_documet_2 \
+ -H 'Content-Type: application/json' \
+ -d '
+{
+  "title": "second Test",
+  "content": "Test test test test",
+  "tags": [
+    "test",
+    "second test"
+  ]
+}'
+
+curl -X GET http://localhost:9200/test_index/_search\?pretty
+
+curl -X GET http://localhost:9200/test_index/_search\?pretty\&q\=title:second
+
+curl -X GET http://localhost:9200/_cat/segments/test_index?v
+
+curl -X PUT http://localhost:9200/test_index/_doc/test_documet_2 \
+ -H 'Content-Type: application/json' \
+ -d '
+{
+  "title": "Updated second Test"
+}'
+
+curl -X POST http://localhost:9200/test_index/_search\?pretty \
+ -H 'Content-Type: application/json' \
+ -d '
+{
+    "query": {
+        "terms":{
+            "_id": ["test_documet"]
+        }
+    }
+}'
+
+
+
+curl -X PUT http://localhost:9200/students \
+ -H 'Content-Type: application/json' \
+ -d '
+    {
+    "mappings" : {},
+    "settings": {
+        "number_of_shards": 10,
+        "number_of_replicas": 3
+    }
+    }
+'
+
+curl -X POST http://localhost:9200/students/_doc/ \
+ -H 'Content-Type: application/json' \
+ -d '
+{
+  "first name": "Leonid",
+  "last name": "Kurhasnkyi",
+  "group": "kn-31mp",
+  "subjects": [
+    "math",
+    "programming",
+    "sport"
+  ]
+}'
+
+curl -X POST http://localhost:9200/students/_search\?pretty \
+ -H 'Content-Type: application/json' \
+ -d '
+{
+    "query": {
+        "match":{
+            "group": "kn-31mp"
+        }
+    }
+}'
+
+curl -X PUT http://localhost:9200/students \
+ -H 'Content-Type: application/json' \
+ -d '
+    {
+        "settings": {
+            "index": {
+                "number_of_replicas": 2,
+                "number_of_shards": 2
+            }
+        }
+    }
+'
+
+
+curl -X POST http://localhost:9200/text_index_2/_doc/ \
+ -H 'Content-Type: application/json' \
+ -d '
+{
+  "title": "Lenovo Drive Key",
+  "description": "Lenovo USB 2TB OTG Metal USB 3.0 Pen Drive Key 1TB-64GB Type C High Speed Pendrive Mini Flash Drive Memory Stick",
+  "type": "gadgets"
+}'
+
+
+curl -X POST http://localhost:9200/text_index_2/_search\?pretty \
+ -H 'Content-Type: application/json' \
+ -d '
+{
+    "query": {
+        "match":{
+            "description": "motherboard"
+        }
+    }
+}'
+
+
+curl -X PUT http://localhost:9200/test_9 \
+ -H 'Content-Type: application/json' \
+ -d '
+    {
+    "mappings" : {},
+    "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1
+    }
+    }
+'
