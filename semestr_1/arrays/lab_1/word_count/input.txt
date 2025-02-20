@@ -1,0 +1,7 @@
+In this chapter we are going to familiarize on how to use the Jupyter notebook with PySpark with the help of word count example.
+I recommend the user to do follow the steps in this chapter and practice to make themselves familiar with the environment.
+In our previous chapter, we installed all the required software to start with PySpark, hope you are ready with the setup,
+if not please follow the steps and install before starting from Install pyspark in jupyter notebook.
+Let's start writing our first pyspark code in a Jupyter notebook, Come lets get started, Open your
+anaconda prompt and type jupyter notebook to open a web page and choose New python 3 as shown
+below to start fresh notebook for our program. a a a a
