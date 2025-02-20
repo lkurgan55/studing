@@ -1,0 +1,5 @@
+uvicorn
+fastapi
+autoname
+sqlalchemy
+psycopg2-binary
