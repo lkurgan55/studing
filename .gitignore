@@ -3,3 +3,4 @@ secret.env
 .DS_Store
 db.json
 test.py
+.data
