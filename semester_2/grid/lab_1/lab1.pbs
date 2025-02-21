@@ -1,0 +1,7 @@
+#!/bin/bash
+#PBS -N lab_1_task
+
+cd $PBS_O_WORKDIR
+
+gcc main.c -o main -lm
+./main
