@@ -14,14 +14,8 @@ int main() {
     double v = 1.0;   // Початкова швидкість, м/с
     double t = 0.0;   // Час
 
-    // Масиви для зберігання координат
-    double x_values[N];
-    double t_values[N];
-
     // Запуск моделювання
     for (int i = 0; i < N; i++) {
-        t_values[i] = t;
-        x_values[i] = x;
 
         // Модифікований метод Ейлера
         double v_mid = v - (b / m) * v * DT / 2 - (c / m) * x * DT / 2;
