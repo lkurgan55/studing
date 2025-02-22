@@ -46,7 +46,7 @@ int main() {
         v = v + DT * a_mid;
         x = x + DT * v_mid;
 
-        printf("t = %.2f, x = %.4f\n", t, x);
+        printf("t = %.2f, x = %.4f, v = %.4f\n", t, x, v);
 
         t += DT;
     }
