@@ -4,3 +4,5 @@ secret.env
 db.json
 test.py
 .data
+*.exe
+.vscode
