@@ -1,5 +1,6 @@
 services:
   coordinator:
+    platform: linux/amd64
     image: basho/riak-kv
     ports:
       - "8087:8087"
@@ -11,6 +12,7 @@ services:
     volumes:
       - schemas:/etc/riak/schemas
   member:
+    platform: linux/amd64
     image: basho/riak-kv
     ports:
       - "8087"
