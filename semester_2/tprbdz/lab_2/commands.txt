@@ -76,7 +76,7 @@ curl -X POST http://localhost:9200/students/_doc/ \
 {
   "first name": "Leonid",
   "last name": "Kurhasnkyi",
-  "group": "kn-31mp",
+  "group": "kn-41mp",
   "subjects": [
     "math",
     "programming",
@@ -90,7 +90,7 @@ curl -X POST http://localhost:9200/students/_search\?pretty \
 {
     "query": {
         "match":{
-            "group": "kn-31mp"
+            "group": "kn-41mp"
         }
     }
 }'
