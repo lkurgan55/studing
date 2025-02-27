@@ -2,7 +2,7 @@ curl localhost:8098/no_bucket/no_key
 
 curl localhost:8098/buckets/cars/keys/matiz -X PUT -H Content-Type:application/json -d '{"props":{"n_val":5,"r":1,"w":5}}'
 
-curl localhost:8098/buckets?buckets=true
+curl localhost:8098/buckets\?buckets=true
 
 curl -X PUT http://localhost:8098/buckets/cars/keys/matiz\?returnbody\=true -H "Content-Type: text/plain" -d "It is cool car"
 
