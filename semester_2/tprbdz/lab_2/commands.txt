@@ -45,18 +45,7 @@ curl -X PUT http://localhost:9200/test_index/_doc/test_documet_2 \
   "title": "Updated second Test"
 }'
 
-curl -X POST http://localhost:9200/test_index/_search\?pretty \
- -H 'Content-Type: application/json' \
- -d '
-{
-    "query": {
-        "terms":{
-            "_id": ["test_documet"]
-        }
-    }
-}'
-
-
+curl -X GET http://localhost:9200/test_index/_doc/test_documet_2\?pretty
 
 curl -X PUT http://localhost:9200/students \
  -H 'Content-Type: application/json' \
@@ -69,6 +58,8 @@ curl -X PUT http://localhost:9200/students \
     }
     }
 '
+
+curl -X GET http://localhost:9200/_cat/shards/students\?v
 
 curl -X POST http://localhost:9200/students/_doc/ \
  -H 'Content-Type: application/json' \
@@ -95,7 +86,7 @@ curl -X POST http://localhost:9200/students/_search\?pretty \
     }
 }'
 
-curl -X PUT http://localhost:9200/students \
+curl -X PUT http://localhost:9200/test_index_2 \
  -H 'Content-Type: application/json' \
  -d '
     {
@@ -108,6 +99,7 @@ curl -X PUT http://localhost:9200/students \
     }
 '
 
+curl -X GET http://localhost:9200/_cat/shards/test_index_2\?v
 
 curl -X POST http://localhost:9200/text_index_2/_doc/ \
  -H 'Content-Type: application/json' \
@@ -118,6 +110,41 @@ curl -X POST http://localhost:9200/text_index_2/_doc/ \
   "type": "gadgets"
 }'
 
+curl -X POST http://localhost:9200/text_index_2/_doc/ \
+ -H 'Content-Type: application/json' \
+ -d '
+{
+  "title": "MACHINIST X99 Motherboard",
+  "description": "Motherboard information: >>Brand:MACHINIST. >>Motherboard model: X99 PR9. >>Processor: Support LGA 2011-3 series, >> Chipset: B85/Q87/c226 chipset.",
+  "type": "tech"
+}'
+
+curl -X POST http://localhost:9200/text_index_2/_doc/ \
+ -H 'Content-Type: application/json' \
+ -d '
+{
+  "title": "Kllisre DDR4 8GB 3200MHz",
+  "description": "Model:Desktop memory Capacity: DDR4 8GB Memory Speed:3200MHz/3600MH Chipset Brand:HY,SEC,MIC.... Memory Channel:Dual Channel Voltage: 1.2V",
+  "type": "tech"
+}'
+
+curl -X POST http://localhost:9200/text_index_2/_doc/ \
+ -H 'Content-Type: application/json' \
+ -d '
+{
+  "title": "PIIFOX ER75 Magnetic Switch Keyboard",
+  "description": "Standard,Ergonomics,Multimedia,Gaming,Mini,For Laptop,for Tablet",
+  "type": "gadgets"
+}'
+
+curl -X POST http://localhost:9200/text_index_2/_doc/ \
+ -H 'Content-Type: application/json' \
+ -d '
+{
+  "title": "PRITOM TAB11 Android 14 Tablet",
+  "description": "Pritom TAB11 10 inch tablet comes with the latest Android 14 OS, 8GB RAM(+4GB Expand), 128GB Large Storage - a micro SD card slot (1TB Expandable).",
+  "type": "tech"
+}'
 
 curl -X POST http://localhost:9200/text_index_2/_search\?pretty \
  -H 'Content-Type: application/json' \
@@ -131,14 +158,18 @@ curl -X POST http://localhost:9200/text_index_2/_search\?pretty \
 }'
 
 
-curl -X PUT http://localhost:9200/test_9 \
+curl -X GET http://localhost:9200/_cat/nodes\?v
+
+curl -X PUT http://localhost:9200/test_5 \
  -H 'Content-Type: application/json' \
  -d '
     {
     "mappings" : {},
     "settings": {
-        "number_of_shards": 1,
-        "number_of_replicas": 1
+        "number_of_shards": 10,
+        "number_of_replicas": 3
     }
     }
 '
+
+curl -X GET http://localhost:9200/_cat/shards/test_5\?v
