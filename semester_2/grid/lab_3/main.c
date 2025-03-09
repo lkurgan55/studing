@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
         t += DT;
     }
 
-    double threshold = 0.1; // Поріг зупинки системи
+    double threshold = 0.3; // Поріг зупинки системи
     printf("Кінцевий час: t = %.2f с, x = %.4f м, v = %.4f м/с\n", t, x, v);
     if (fabs(x) < threshold && fabs(v) < threshold) {
         printf("Система зупинилась.\n");
