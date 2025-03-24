@@ -29,6 +29,8 @@ services:
             - redis-master
             - redis-slave-1
             - redis-slave-2
+        ports:
+          - 26379:26379
 
     sentinel-2:
         build: sentinel
@@ -36,6 +38,8 @@ services:
             - SENTINEL_DOWN_AFTER=5000
             - SENTINEL_FAILOVER=500
             - SENTINEL_QUORUM=2
+        ports:
+          - 26380:26379
         depends_on:
             - redis-master
             - redis-slave-1
@@ -51,6 +55,8 @@ services:
             - redis-master
             - redis-slave-1
             - redis-slave-2
+        ports:
+          - 26381:26379
 
     redis_cluster_app:
         build: app
