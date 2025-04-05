@@ -1,0 +1,17 @@
+services:
+  ipfs:
+    image: ipfs/go-ipfs:latest
+    container_name: ipfs-node
+    entrypoint: sh
+    tty: true
+    ports:
+      - "4001:4001"   # p2p
+      - "5001:5001"   # API
+      - "8080:8080"   # Gateway
+    volumes:
+      - ipfs_staging:/export
+      - ipfs_data:/data/ipfs
+
+volumes:
+  ipfs_staging:
+  ipfs_data:
