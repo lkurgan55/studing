@@ -1,0 +1,14 @@
+[
+  Executable = "main";
+  StdOutput = "stdout.txt";
+  StdError = "stderr.txt";
+  OutputSandbox = {
+    "stdout.txt",
+    "stderr.txt",
+    "output.txt"
+  };
+  InputSandbox = {"main"};
+  OutputSandboxBaseDestUri = "gsiftp://localhost";
+]
+
+glite-ce-job-submit -a -r ce.bitp.kiev.ua:8443/cream-pbs-bitp kurhanskyi_lab_4.jdl

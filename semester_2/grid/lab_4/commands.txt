@@ -1,0 +1,5 @@
+glite-ce-job-submit -a -r ce.bitp.kiev.ua:8443/cream-pbs-bitp kurhanskyi_lab_4.jdl
+
+glite-ce-job-status https://ce.bitp.kiev.ua:8443/CREAM<ID>
+
+glite-ce-job-output https://ce.bitp.kiev.ua:8443/CREAM<ID>

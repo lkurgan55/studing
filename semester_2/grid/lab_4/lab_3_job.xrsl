@@ -1,0 +1,8 @@
+&(executable="search.sh")
+ (jobname="Kurhanskyi_lab_3_job")
+ (inputFiles=("search.sh" "") (main ""))
+ (executables="main")
+ (arguments="main" "100" "0.5")
+ (outputFiles=(stdout.txt "") (stderr.txt "") (output.txt "output.txt"))
+ (stdout="stdout.txt")
+ (stderr="stderr.txt")
