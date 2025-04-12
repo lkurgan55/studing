@@ -19,7 +19,7 @@ def read_data(filename):
     return np.array(t_values), np.array(x_values), np.array(v_values)
 
 # Вкажи назву файлу
-filename = "data.txt"
+filename = "output.txt"
 
 # Зчитуємо дані
 t, x, v = read_data(filename)
