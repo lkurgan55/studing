@@ -24,9 +24,9 @@ for target in highlight_freqs:
     idx = np.argmin(np.abs(omega - target))  # Знаходимо найближчий індекс
     plt.plot(omega[idx], amplitude[idx], 'o', color='black', label=f"ω = {omega[idx]:.1f}")
 
-plt.title("Амплітудно-частотна характеристика (резонансна крива)")
-plt.xlabel("Частота зовнішньої сили ω (рад/с)")
-plt.ylabel("Амплітуда зміщення A (м)")
+plt.title("Амплітудно-частотна характеристика")
+plt.xlabel("Частота зовнішньої сили ω")
+plt.ylabel("Амплітуда зміщення A")
 plt.grid(True)
 plt.legend()
 plt.tight_layout()

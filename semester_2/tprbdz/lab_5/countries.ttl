@@ -1,0 +1,36 @@
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix p: <http://marclieber.fr/ontology/src/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix wd: <http://www.wikidata.org/entity/> .
+
+<http://example.org/resource/France> a foaf:Country ;
+    rdfs:label "France" ;
+    p:wikidata wd:Q142 .
+
+<http://example.org/resource/Germany> a foaf:Country ;
+    rdfs:label "Germany" ;
+    p:wikidata wd:Q183 .
+
+<http://example.org/resource/Italy> a foaf:Country ;
+    rdfs:label "Italy" ;
+    p:wikidata wd:Q38 .
+
+<http://example.org/resource/Netherlands> a foaf:Country ;
+    rdfs:label "Netherlands" ;
+    p:wikidata wd:Q55 .
+
+<http://example.org/resource/Poland> a foaf:Country ;
+    rdfs:label "Poland" ;
+    p:wikidata wd:Q36 .
+
+<http://example.org/resource/Spain> a foaf:Country ;
+    rdfs:label "Spain" ;
+    p:wikidata wd:Q29 .
+
+<http://example.org/resource/Sweden> a foaf:Country ;
+    rdfs:label "Sweden" ;
+    p:wikidata wd:Q34 .
+
+<http://example.org/resource/Ukraine> a foaf:Country ;
+    rdfs:label "Ukraine" ;
+    p:wikidata wd:Q212 .
