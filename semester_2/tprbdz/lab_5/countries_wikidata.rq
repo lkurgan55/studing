@@ -1,0 +1,17 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+
+SELECT ?wikidataID ?countryLabel ?capitalLabel ?currencyLabel ?languageLabel WHERE {
+  VALUES ?wikidataID { {{VALUES}} }
+
+  ?wikidataID rdfs:label ?countryLabel .
+  OPTIONAL { ?wikidataID wdt:P36 ?capital . ?capital rdfs:label ?capitalLabel . }
+  OPTIONAL { ?wikidataID wdt:P38 ?currency . ?currency rdfs:label ?currencyLabel . }
+  OPTIONAL { ?wikidataID wdt:P37 ?language . ?language rdfs:label ?languageLabel . }
+
+  FILTER (LANG(?countryLabel) = "en")
+  FILTER (!BOUND(?capitalLabel) || LANG(?capitalLabel) = "en")
+  FILTER (!BOUND(?currencyLabel) || LANG(?currencyLabel) = "en")
+  FILTER (!BOUND(?languageLabel) || LANG(?languageLabel) = "en")
+}
