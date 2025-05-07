@@ -26,8 +26,6 @@ def get_current_metrics():
     return cpu_val, ram_val, net_val_normalized, proc_val, latency_val
 
 def main():
-    print("🛡️ Гібридна експертна система для діагностики вірусних загроз 🛡️\n")
-
     choice = input("Оберіть спосіб отримання метрик:\n"
                    "[1] Ввести вручну\n"
                    "[2] Використати поточні значення системи\n"
@@ -38,7 +36,7 @@ def main():
         cpu_val, ram_val, net_val, proc_val, latency_val = get_current_metrics()
         print(f"CPU: {cpu_val:.2f}%")
         print(f"RAM: {ram_val:.2f}%")
-        print(f"Мережа: {net_val:.2f}% (нормалізовано)")
+        print(f"Мережа: {net_val:.2f}%")
         print(f"Кількість процесів: {proc_val}")
         print(f"Час відгуку: {latency_val:.2f} мс\n")
     else:
@@ -50,7 +48,7 @@ def main():
 
     # Аналіз метрик за допомогою нечіткої логіки
     fuzzy_result = evaluate_risk(cpu_val, ram_val, net_val, proc_val, latency_val)
-    print("Аналіз метрик завершено ✅\n")
+    print("Аналіз метрик за допомогою нечіткої логіки завершено\n")
 
     # Якщо ризик хоча б середній, уточнюємо симптоми у користувача
     if fuzzy_result['medium_or_high'] > 0.5:
@@ -63,15 +61,14 @@ def main():
     result = identify_virus_class(fuzzy_result, user_symptoms)
 
     # Вивід фінального класу вірусу
-    print("\n🧬 Фінальний клас загрози:", result['virus_class'])
+    print("\nФінальний клас загрози:", result['virus_class'])
 
     # Вивід пояснення рішення
-    print("\n📝 Пояснення прийнятого рішення:\n")
     print(result['explanation'])
 
     # Вивід рекомендацій
     recommendations = get_recommendations(result['virus_class'], fuzzy_result)
-    print("\n🚩 Рекомендації:")
+    print("\nРекомендації:")
     for recommendation in recommendations:
         print("-", recommendation)
 

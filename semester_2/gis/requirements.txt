@@ -1,3 +1,5 @@
 psutil
 scikit-fuzzy
 numpy
+scipy
+networkx

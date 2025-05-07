@@ -6,7 +6,7 @@ from skfuzzy import control as ctrl
 cpu = ctrl.Antecedent(np.arange(0, 101, 1), 'cpu')
 ram = ctrl.Antecedent(np.arange(0, 101, 1), 'ram')
 net = ctrl.Antecedent(np.arange(0, 101, 1), 'net')
-proc = ctrl.Antecedent(np.arange(0, 201, 1), 'proc')
+proc = ctrl.Antecedent(np.arange(0, 501, 1), 'proc')
 latency = ctrl.Antecedent(np.arange(0, 2001, 1), 'latency')
 
 # Вихідна змінна - рівень ризику
@@ -18,9 +18,9 @@ for var in [cpu, ram, net]:
     var['medium'] = fuzz.trimf(var.universe, [30, 50, 70])
     var['high'] = fuzz.trimf(var.universe, [60, 80, 100])
 
-proc['low'] = fuzz.trimf(proc.universe, [0, 30, 70])
-proc['medium'] = fuzz.trimf(proc.universe, [50, 100, 150])
-proc['high'] = fuzz.trimf(proc.universe, [120, 160, 200])
+proc['low'] = fuzz.trimf(proc.universe, [0, 100, 200])
+proc['medium'] = fuzz.trimf(proc.universe, [200, 300, 450])
+proc['high'] = fuzz.trimf(proc.universe, [400, 450, 500])
 
 latency['low'] = fuzz.trimf(latency.universe, [0, 300, 600])
 latency['medium'] = fuzz.trimf(latency.universe, [500, 900, 1300])
@@ -30,18 +30,6 @@ latency['high'] = fuzz.trimf(latency.universe, [1200, 1600, 2000])
 risk['low'] = fuzz.trimf(risk.universe, [0, 20, 40])
 risk['medium'] = fuzz.trimf(risk.universe, [30, 50, 70])
 risk['high'] = fuzz.trimf(risk.universe, [60, 80, 100])
-
-# Дуже високий ризик (операція концентрації - квадрат ступеня приналежності)
-risk['very_high'] = risk['high'].mf ** 2
-
-# Середній або високий ризик (операція об'єднання - максимальне з двох)
-risk['medium_or_high'] = np.fmax(risk['medium'].mf, risk['high'].mf)
-
-# Не низький ризик (логічне заперечення)
-risk['not_low'] = 1 - risk['low'].mf
-
-# Помірно низький ризик (операція розмиття - квадратний корінь ступеня приналежності)
-risk['moderately_low'] = np.sqrt(risk['low'].mf)
 
 # Правила (приклади, далі розширимо до 30+ правил)
 rules = [
@@ -68,16 +56,19 @@ def evaluate_risk(cpu_val, ram_val, net_val, proc_val, latency_val):
     risk_simulation.input['latency'] = latency_val
     risk_simulation.compute()
 
-    # Вихідні значення
+    base_low = fuzz.interp_membership(risk.universe, risk['low'].mf, risk_simulation.output['risk'])
+    base_med = fuzz.interp_membership(risk.universe, risk['medium'].mf, risk_simulation.output['risk'])
+    base_high = fuzz.interp_membership(risk.universe, risk['high'].mf, risk_simulation.output['risk'])
+
+    # Побудова додаткових логічних/нечітких рівнів
     result = {
-        'low': fuzz.interp_membership(risk.universe, risk['low'].mf, risk_simulation.output['risk']),
-        'medium': fuzz.interp_membership(risk.universe, risk['medium'].mf, risk_simulation.output['risk']),
-        'high': fuzz.interp_membership(risk.universe, risk['high'].mf, risk_simulation.output['risk']),
-        'very_high': fuzz.interp_membership(risk.universe, risk['very_high'], risk_simulation.output['risk']),
-        'medium_or_high': fuzz.interp_membership(risk.universe, risk['medium_or_high'], risk_simulation.output['risk']),
-        'not_low': fuzz.interp_membership(risk.universe, risk['not_low'], risk_simulation.output['risk']),
-        'moderately_low': fuzz.interp_membership(risk.universe, risk['moderately_low'], risk_simulation.output['risk'])
+        'low': base_low,
+        'medium': base_med,
+        'high': base_high,
+        'very_high': base_high ** 2,
+        'medium_or_high': np.fmax(base_med, base_high),
+        'not_low': 1 - base_low,
+        'moderately_low': np.sqrt(base_low)
     }
 
     return result
-

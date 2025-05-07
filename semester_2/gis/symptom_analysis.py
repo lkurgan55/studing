@@ -12,12 +12,12 @@ questions_to_symptoms = {
 # Функція для взаємодії з користувачем
 def get_user_symptoms():
     identified_symptoms = []
-    
+
     print("\nДайте відповідь на наступні питання щодо стану вашого пристрою:\n")
-    
+
     for question, symptom in questions_to_symptoms.items():
         answer = input(question).strip().lower()
         if answer == 'y':
             identified_symptoms.append(symptom)
-    
+
     return identified_symptoms
