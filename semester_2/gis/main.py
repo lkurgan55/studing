@@ -14,7 +14,7 @@ def get_current_metrics():
     proc_val = len(psutil.pids())
 
     start_time = time.time()
-    time.sleep(0.1)  # Штучна затримка для вимірювання часу відгуку
+    time.sleep(0.1)
     latency_val = (time.time() - start_time) * 1000  # у мілісекундах
 
     # Нормалізація значень мережі до %
@@ -26,7 +26,6 @@ def main():
     choice = input("Оберіть спосіб отримання метрик:\n"
                    "[1] Ввести вручну\n"
                    "[2] Використати поточні значення системи\n"
-                   "[3] Test\n"
                    "Ваш вибір (1/2): ").strip()
 
     if choice == '2':
@@ -37,9 +36,6 @@ def main():
         print(f"Мережа: {net_val:.2f}%")
         print(f"Кількість процесів: {proc_val}")
         print(f"Час відгуку: {latency_val:.2f} мс\n")
-    elif choice == '3':
-        print("\nОтримуємо поточні значення системних параметрів...\n")
-        cpu_val, ram_val, net_val, proc_val, latency_val = 95, 93, 90, 450, 1500
     else:
         cpu_val = float(input("Введіть завантаження CPU (0-100%): "))
         ram_val = float(input("Введіть завантаження RAM (0-100%): "))
