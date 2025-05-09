@@ -10,15 +10,25 @@ def identify_virus_class(fuzzy_risk_levels):
     user_symptoms = []
 
     # Етап 1: Аналіз метрик і рівня ризику
-    if fuzzy_risk_levels['low'] > 0.7:
+    if (
+        fuzzy_risk_levels['low'] > 0.7 or
+        fuzzy_risk_levels['moderately_low'] > 0.8 or
+        fuzzy_risk_levels['not_low'] < 0.3
+    ):
         explanation.add_step("Метрики вказують на низьке навантаження. Немає загрози.")
         return {
             'virus_class': 'Немає загроз',
             'explanation': explanation.generate_explanation('Немає загроз')
         }
-    elif fuzzy_risk_levels['very_high'] > 0.8:
+    elif (
+        fuzzy_risk_levels['very_high'] > 0.8 or
+        fuzzy_risk_levels['high'] > 0.9
+    ):
         explanation.add_step("Виявлено критичний рівень ризику. Пропускаємо загальні питання і переходимо до класифікації ШПЗ.")
-    elif fuzzy_risk_levels['medium_or_high'] > 0.5:
+    elif (
+        fuzzy_risk_levels['medium_or_high'] > 0.5 or
+        fuzzy_risk_levels['medium'] > 0.6
+    ):
         explanation.add_step("Метрики вказують на середнє або високе навантаження. Починаємо перевірку на зараження.")
 
         # Етап 2: Загальні питання

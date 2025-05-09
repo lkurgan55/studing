@@ -62,6 +62,10 @@ def evaluate_risk(cpu_val, ram_val, net_val, proc_val, latency_val):
     risk_simulation.input['latency'] = latency_val
     risk_simulation.compute()
 
+    # зворотня операція нечіткої логіки
+    # risk.universe - це діапазон значень ризику
+    # risk['low'].mf - функція приналежності для низького ризику
+    # risk_simulation.output['risk'] - результат симуляції
     base_low = fuzz.interp_membership(risk.universe, risk['low'].mf, risk_simulation.output['risk'])
     base_med = fuzz.interp_membership(risk.universe, risk['medium'].mf, risk_simulation.output['risk'])
     base_high = fuzz.interp_membership(risk.universe, risk['high'].mf, risk_simulation.output['risk'])
@@ -71,10 +75,10 @@ def evaluate_risk(cpu_val, ram_val, net_val, proc_val, latency_val):
         'low': base_low,
         'medium': base_med,
         'high': base_high,
-        'very_high': base_high ** 2,
-        'medium_or_high': np.fmax(base_med, base_high),
-        'not_low': 1 - base_low,
-        'moderately_low': np.sqrt(base_low)
+        'very_high': base_high ** 2,                    # Операція концентрації підвищує «впевненість» у high
+        'medium_or_high': np.fmax(base_med, base_high), # Операція об'єднання - чи ризик принаймні середній або вищий
+        'not_low': 1 - base_low,                        # Операція логічного заперечення вказує, наскільки ризик точно не низький
+        'moderately_low': np.sqrt(base_low)             # Операція розмиття робить «низький ризик» трохи менш суворим
     }
 
     return result
