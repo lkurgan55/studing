@@ -18,7 +18,7 @@ def get_current_metrics():
     latency_val = (time.time() - start_time) * 1000  # у мілісекундах
 
     # Нормалізація значень мережі до %
-    net_val_normalized = min(net_val_mb / 10, 100)  # умовна нормалізація
+    net_val_normalized = min(net_val_mb / 1000, 100)
 
     return cpu_val, ram_val, net_val_normalized, proc_val, latency_val
 

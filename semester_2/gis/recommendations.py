@@ -4,10 +4,14 @@ def get_recommendations(virus_class, fuzzy_risk_levels):
     # Загальні рекомендації, що базуються на рівні ризику
     if fuzzy_risk_levels['very_high'] > 0.7:
         recommendations.append("Рівень ризику дуже високий. Негайно від'єднайте пристрій від мережі і зверніться до фахівця.")
-    elif fuzzy_risk_levels['medium_or_high'] > 0.5:
-        recommendations.append("Рівень ризику середній або високий. Проведіть повне сканування пристрою антивірусом.")
+    elif fuzzy_risk_levels['high'] > 0.6:
+        recommendations.append("Рівень ризику високий. Обмежте підключення до інтернету та проведіть повне антивірусне сканування.")
+    elif fuzzy_risk_levels['medium'] > 0.5:
+        recommendations.append("Ризик середній. Рекомендується перевірити підозрілі процеси та почистити автозапуск.")
+    elif fuzzy_risk_levels['moderately_low'] > 0.4:
+        recommendations.append("Ризик помірно низький. Проведіть звичайну перевірку системи антивірусом.")
     else:
-        recommendations.append("Ризик низький. Рекомендуємо провести стандартну перевірку пристрою.")
+        recommendations.append("Ризик низький. Все працює стабільно, але рекомендується періодичний моніторинг.")
 
     # Специфічні рекомендації, що базуються на класі вірусу
     class_specific_recommendations = {
@@ -21,7 +25,7 @@ def get_recommendations(virus_class, fuzzy_risk_levels):
         ],
         'Spyware': [
             "Змініть важливі паролі після очищення пристрою.",
-            "Використовуйте спеціалізоване ПЗ для видалення шпигунських програм (наприклад, Malwarebytes)."
+            "Використовуйте спеціалізоване ПЗ для видалення шпигунських програм."
         ],
         'Adware': [
             "Очистіть кеш та куки браузера.",
