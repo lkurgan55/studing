@@ -1,5 +1,3 @@
-# recommendations.py
-
 def get_recommendations(virus_class, fuzzy_risk_levels):
     recommendations = []
 
@@ -9,7 +7,7 @@ def get_recommendations(virus_class, fuzzy_risk_levels):
     elif fuzzy_risk_levels['medium_or_high'] > 0.5:
         recommendations.append("Рівень ризику середній або високий. Проведіть повне сканування пристрою антивірусом.")
     else:
-        recommendations.append("Ризик помірний. Рекомендуємо провести стандартну перевірку пристрою.")
+        recommendations.append("Ризик низький. Рекомендуємо провести стандартну перевірку пристрою.")
 
     # Специфічні рекомендації, що базуються на класі вірусу
     class_specific_recommendations = {

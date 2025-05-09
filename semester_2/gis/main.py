@@ -1,8 +1,5 @@
-# main.py
-
 from fuzzy_logic import evaluate_risk
 from expert_rules import identify_virus_class
-from symptom_analysis import get_user_symptoms
 from recommendations import get_recommendations
 import psutil
 import time
@@ -29,6 +26,7 @@ def main():
     choice = input("Оберіть спосіб отримання метрик:\n"
                    "[1] Ввести вручну\n"
                    "[2] Використати поточні значення системи\n"
+                   "[3] Test\n"
                    "Ваш вибір (1/2): ").strip()
 
     if choice == '2':
@@ -39,6 +37,9 @@ def main():
         print(f"Мережа: {net_val:.2f}%")
         print(f"Кількість процесів: {proc_val}")
         print(f"Час відгуку: {latency_val:.2f} мс\n")
+    elif choice == '3':
+        print("\nОтримуємо поточні значення системних параметрів...\n")
+        cpu_val, ram_val, net_val, proc_val, latency_val = 95, 93, 90, 450, 1500
     else:
         cpu_val = float(input("Введіть завантаження CPU (0-100%): "))
         ram_val = float(input("Введіть завантаження RAM (0-100%): "))
@@ -46,27 +47,17 @@ def main():
         proc_val = int(input("Введіть кількість активних процесів: "))
         latency_val = float(input("Введіть час відгуку системи (в мс): "))
 
-    # Аналіз метрик за допомогою нечіткої логіки
+    # Аналіз метрик
     fuzzy_result = evaluate_risk(cpu_val, ram_val, net_val, proc_val, latency_val)
     print("Аналіз метрик за допомогою нечіткої логіки завершено\n")
 
-    # Якщо ризик хоча б середній, уточнюємо симптоми у користувача
-    if fuzzy_result['medium_or_high'] > 0.5:
-        user_symptoms = get_user_symptoms()
-    else:
-        user_symptoms = []
-        print("Система визначила низький ризик, додаткові питання не потрібні.\n")
+    # Виклик експертної системи з інтерактивним опитуванням
+    result = identify_virus_class(fuzzy_result)
 
-    # Виклик експертної системи
-    result = identify_virus_class(fuzzy_result, user_symptoms)
-
-    # Вивід фінального класу вірусу
     print("\nФінальний клас загрози:", result['virus_class'])
-
-    # Вивід пояснення рішення
+    print("\nПояснення прийнятого рішення:\n")
     print(result['explanation'])
 
-    # Вивід рекомендацій
     recommendations = get_recommendations(result['virus_class'], fuzzy_result)
     print("\nРекомендації:")
     for recommendation in recommendations:

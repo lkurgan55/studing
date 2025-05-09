@@ -14,7 +14,7 @@ risk = ctrl.Consequent(np.arange(0, 101, 1), 'risk')
 
 # Функції приналежності для вхідних змінних
 for var in [cpu, ram, net]:
-    var['low'] = fuzz.trimf(var.universe, [0, 20, 40])
+    var['low'] = fuzz.trimf(var.universe, [0, 20, 40]) # 0-20 - low->1, 20-40 - low -> 0
     var['medium'] = fuzz.trimf(var.universe, [30, 50, 70])
     var['high'] = fuzz.trimf(var.universe, [60, 80, 100])
 
@@ -31,16 +31,22 @@ risk['low'] = fuzz.trimf(risk.universe, [0, 20, 40])
 risk['medium'] = fuzz.trimf(risk.universe, [30, 50, 70])
 risk['high'] = fuzz.trimf(risk.universe, [60, 80, 100])
 
-# Правила (приклади, далі розширимо до 30+ правил)
+# Правила
 rules = [
     ctrl.Rule(cpu['high'] & ram['high'], risk['high']),
     ctrl.Rule(proc['high'] & latency['high'], risk['high']),
     ctrl.Rule(net['high'] & cpu['high'], risk['high']),
+    ctrl.Rule(cpu['high'] & proc['medium'], risk['high']),
+    ctrl.Rule(net['high'] & ram['medium'], risk['high']),
+    ctrl.Rule(net['medium'] & proc['high'], risk['high']),
+    ctrl.Rule(cpu['medium'] & net['high'], risk['high']),
+    ctrl.Rule(cpu['medium'] & ram['medium'] & latency['medium'], risk['medium']),
     ctrl.Rule(cpu['medium'] | ram['medium'], risk['medium']),
     ctrl.Rule(proc['medium'] & latency['medium'], risk['medium']),
     ctrl.Rule(net['medium'] & ram['medium'], risk['medium']),
     ctrl.Rule(cpu['low'] & ram['low'] & proc['low'] & latency['low'], risk['low']),
     ctrl.Rule(net['low'] & latency['low'], risk['low']),
+    ctrl.Rule(proc['low'] & latency['low'] & cpu['low'], risk['low']),
 ]
 
 # Побудова системи
@@ -60,7 +66,7 @@ def evaluate_risk(cpu_val, ram_val, net_val, proc_val, latency_val):
     base_med = fuzz.interp_membership(risk.universe, risk['medium'].mf, risk_simulation.output['risk'])
     base_high = fuzz.interp_membership(risk.universe, risk['high'].mf, risk_simulation.output['risk'])
 
-    # Побудова додаткових логічних/нечітких рівнів
+    # Побудова додаткових логічних рівнів
     result = {
         'low': base_low,
         'medium': base_med,
