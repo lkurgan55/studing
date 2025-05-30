@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  redis-node-1:
+    image: redis:7
+    command: [
+        "redis-server", "--port", "7000", "--cluster-enabled", "yes",
+        "--cluster-config-file", "nodes.conf", "--cluster-node-timeout",
+        "5000", "--appendonly", "yes"
+    ]
+    ports:
+      - "7000:7000"
+    networks: [redisnet]
+
+  redis-node-2:
+    image: redis:7
+    command: ["redis-server", "--port", "7001", "--cluster-enabled", "yes", "--cluster-config-file", "nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
+    ports:
+      - "7001:7001"
+    networks: [redisnet]
+
+  redis-node-3:
+    image: redis:7
+    command: ["redis-server", "--port", "7002", "--cluster-enabled", "yes", "--cluster-config-file", "nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
+    ports:
+      - "7002:7002"
+    networks: [redisnet]
+
+  redis-init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+    networks: [redisnet]
+
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=redis://redis-node-1:7000
+      - REDIS_EXPORTER_IS_CLUSTER=true
+    depends_on:
+      - redis-node-1
+    networks: [redisnet]
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks: [redisnet]
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    networks: [redisnet]
+
+
+networks:
+  redisnet:
