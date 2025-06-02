@@ -9,3 +9,11 @@ test.py
 *.mail
 *.pem
 */databases/*
+semester_2/mlops/model/*
+*.env
+label_encoder.pkl
+/venv
+semester_2/mlops/minio/*
+semester_2/mlops/airflow/logs
+semester_2/mlops/airflow/plugins
+semester_2/mlops/airflow/airflow-data
