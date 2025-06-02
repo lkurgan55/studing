@@ -1,52 +1,70 @@
-# train.py
 
-from datasets import load_dataset
-from transformers import (
-    DistilBertTokenizerFast,
-    DistilBertForSequenceClassification,
-    Trainer,
-    TrainingArguments,
+import json
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from datasets import Dataset
+from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification, TrainingArguments, Trainer
+import numpy as np
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+
+# Load and prepare dataset
+with open("train_data/merged_data.json", "r", encoding="utf-8") as f:
+    data = json.load(f)
+
+df = pd.DataFrame(data)
+label_encoder = LabelEncoder()
+df["label_id"] = label_encoder.fit_transform(df["label"])
+
+train_texts, val_texts, train_labels, val_labels = train_test_split(
+    df["text"].tolist(), df["label_id"].tolist(), test_size=0.2, random_state=42
 )
-import torch
 
-# 1. Завантажуємо невеликий набір з imdb (можна буде замінити на власний)
-dataset = load_dataset("imdb", split="train[:2%]")  # ~500 записів
-dataset = dataset.train_test_split(test_size=0.2)
-
-# 2. Токенізуємо
+# Tokenization
 tokenizer = DistilBertTokenizerFast.from_pretrained("distilbert-base-uncased")
+train_encodings = tokenizer(train_texts, truncation=True, padding=True)
+val_encodings = tokenizer(val_texts, truncation=True, padding=True)
 
-def tokenize(example):
-    return tokenizer(example["text"], truncation=True, padding="max_length")
+# Prepare Huggingface Datasets
+train_dataset = Dataset.from_dict({**train_encodings, "label": train_labels})
+val_dataset = Dataset.from_dict({**val_encodings, "label": val_labels})
 
-tokenized_dataset = dataset.map(tokenize, batched=True)
+# Load model
+model = DistilBertForSequenceClassification.from_pretrained(
+    "distilbert-base-uncased", num_labels=len(label_encoder.classes_)
+)
 
-# 3. Створюємо модель
-model = DistilBertForSequenceClassification.from_pretrained("distilbert-base-uncased", num_labels=2)
+def compute_metrics(pred):
+    labels = pred.label_ids
+    preds = np.argmax(pred.predictions, axis=1)
+    return {
+        "accuracy": accuracy_score(labels, preds),
+        "f1": f1_score(labels, preds, average="weighted"),
+        "precision": precision_score(labels, preds, average="weighted"),
+        "recall": recall_score(labels, preds, average="weighted"),
+    }
 
-# 4. Параметри тренування
 training_args = TrainingArguments(
     output_dir="./model/saved_model",
-    num_train_epochs=2,
+    num_train_epochs=3,
     per_device_train_batch_size=8,
     per_device_eval_batch_size=8,
-    evaluation_strategy="epoch",
-    save_strategy="epoch",
-    logging_dir="./logs",
     logging_steps=10,
+    logging_dir="./logs"
 )
 
-# 5. Trainer
 trainer = Trainer(
     model=model,
     args=training_args,
-    train_dataset=tokenized_dataset["train"],
-    eval_dataset=tokenized_dataset["test"],
+    train_dataset=train_dataset,
+    eval_dataset=val_dataset,
+    compute_metrics=compute_metrics,
+    tokenizer=tokenizer
 )
 
-# 6. Тренування
 trainer.train()
 
-# 7. Збереження моделі і токенайзера
-model.save_pretrained("./model/saved_model")
-tokenizer.save_pretrained("./model/saved_model")
+# Save label encoder
+import pickle
+with open("model/label_encoder.pkl", "wb") as f:
+    pickle.dump(label_encoder, f)

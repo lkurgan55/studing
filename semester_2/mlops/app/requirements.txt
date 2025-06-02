@@ -2,3 +2,9 @@ fastapi
 uvicorn
 transformers
 torch
+datasets
+scikit-learn
+minio
+apache-airflow
+scikit-learn
+joblib
