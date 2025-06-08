@@ -17,7 +17,7 @@ def fetch_tweets(**kwargs):
     client = tweepy.Client(bearer_token=TWITTER_BEARER_TOKEN)
     query = "(news OR breaking OR politics OR war OR government OR parliament OR president OR conflict) -is:retweet lang:en"
 
-    tweets = client.search_recent_tweets(query=query, max_results=100)
+    tweets = client.search_recent_tweets(query=query, max_results=20)
 
     data = []
     for tweet in tweets.data or []:
