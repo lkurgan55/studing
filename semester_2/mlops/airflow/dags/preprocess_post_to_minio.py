@@ -2,7 +2,6 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
 from minio import Minio
-import os
 from io import BytesIO
 import json
 import re
@@ -11,7 +10,7 @@ from config import MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, DATA_BUCK
 
 
 def clean_text(text):
-    """Clean tweet text by removing unwanted characters and links."""
+    """Clean post text by removing unwanted characters and links."""
     text = text.lower()
 
     # Delete links, mentions, hashtags
@@ -29,11 +28,11 @@ def clean_text(text):
     return text
 
 
-def preprocess_tweets(**kwargs):
-    """Preprocess tweets by cleaning text and saving to MinIO storage."""
+def preprocess_posts(**kwargs):
+    """Preprocess text by cleaning text and saving to MinIO storage."""
     date_prefix = datetime.utcnow().strftime("%Y-%m-%d")
     source_path = f"raw_data/twitter/{date_prefix}/tweets.json"
-    dest_path = f"processed_data/twitter/{date_prefix}/cleaned_tweets.json"
+    dest_path = f"processed_data/twitter/{date_prefix}/cleaned_posts.json"
 
     client = Minio(
         endpoint=MINIO_ENDPOINT,
@@ -42,17 +41,14 @@ def preprocess_tweets(**kwargs):
         secure=False
     )
 
-    # Reading original tweets
+    # Reading original text
     response = client.get_object(DATA_BUCKET, source_path)
-    tweets = json.loads(response.read().decode("utf-8"))
+    posts = json.loads(response.read().decode("utf-8"))
 
     # clean text
     cleaned = []
-    for t in tweets:
-        cleaned.append({
-            "id": t["id"],
-            "text": clean_text(t["text"])
-        })
+    for p in posts:
+        cleaned.append({"text": clean_text(p["text"])})
 
     # write to MinIO
     cleaned_bytes = json.dumps(cleaned, indent=2).encode("utf-8")
@@ -64,7 +60,7 @@ def preprocess_tweets(**kwargs):
         content_type="application/json"
     )
 
-    print(f"Saved cleaned tweets to {dest_path}")
+    print(f"Saved cleaned posts to {dest_path}")
 
 
 default_args = {
@@ -72,15 +68,15 @@ default_args = {
 }
 
 with DAG(
-    dag_id="preprocess_tweets_to_minio",
+    dag_id="preprocess_posts_to_minio",
     default_args=default_args,
     schedule_interval="@daily",
     catchup=False,
-    tags=["twitter", "minio", "preprocessing"],
+    tags=["minio", "preprocessing"],
 ) as dag:
 
     preprocess = PythonOperator(
-        task_id="preprocess_tweets",
-        python_callable=preprocess_tweets,
+        task_id="preprocess_posts",
+        python_callable=preprocess_posts,
         provide_context=True,
     )

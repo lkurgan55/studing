@@ -1,7 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
-import os
 import json
 import tweepy
 from minio import Minio
@@ -21,12 +20,7 @@ def fetch_tweets(**kwargs):
 
     data = []
     for tweet in tweets.data or []:
-        data.append(
-            {
-                "id": tweet.id,
-                "text": tweet.text
-            }
-        )
+        data.append({"text": tweet.text})
 
     kwargs["ti"].xcom_push(key="tweets", value=data)
 
@@ -35,12 +29,7 @@ def upload_to_minio(**kwargs):
     tweets = kwargs["ti"].xcom_pull(task_ids="fetch_tweets", key="tweets")
     object_name = f"raw_data/twitter/{date_prefix}/tweets.json"
 
-    client = Minio(
-        endpoint=MINIO_ENDPOINT,
-        access_key=MINIO_ACCESS_KEY,
-        secret_key=MINIO_SECRET_KEY,
-        secure=False
-    )
+    client = Minio(endpoint=MINIO_ENDPOINT, access_key=MINIO_ACCESS_KEY, secret_key=MINIO_SECRET_KEY, secure=False)
 
     json_data = json.dumps(tweets, indent=2).encode("utf-8")
     client.put_object(

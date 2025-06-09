@@ -6,7 +6,6 @@ x-airflow-common:
   environment:
     - AIRFLOW__CORE__EXECUTOR=LocalExecutor
     - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
-    - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
     - AIRFLOW__CORE__LOAD_EXAMPLES=False
     - AIRFLOW__LOGGING__LOGGING_LEVEL=INFO
     - AIRFLOW__WEBSERVER__DEFAULT_USER=airflow
@@ -15,7 +14,6 @@ x-airflow-common:
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
-    - ./plugins:/opt/airflow/plugins
     - ./.env:/opt/airflow/.env
   depends_on:
     - postgres
@@ -76,6 +74,14 @@ services:
         mc mb -p local/model || true;
         mc ls local;
         exit 0;"
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - mlops-net
 
 volumes:
   minio_data:

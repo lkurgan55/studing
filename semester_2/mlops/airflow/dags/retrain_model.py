@@ -11,54 +11,43 @@ from pathlib import Path
 import pickle
 from transformers import Trainer, TrainingArguments, AutoModelForSequenceClassification, AutoTokenizer
 from sklearn.preprocessing import LabelEncoder
-from config import MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY
+from config import MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MODEL_BUCKET, DATA_BUCKET, TMP_DIR
+from utils import download_from_minio
 
 default_args = {
     "start_date": datetime(2023, 1, 1),
 }
 
-MODEL_BUCKET = "model"
-DATA_BUCKET = "training-data"
-TMP_DIR ='/tmp'
-
 date_prefix = datetime.utcnow().strftime("%Y-%m-%d")
-train_data_name = f"label_data/twitter/{date_prefix}/tweets.json"
-
 
 def download_model(**kwargs):
     """Load the current model from MinIO."""
-    client = Minio(MINIO_ENDPOINT, access_key=MINIO_ACCESS_KEY, secret_key=MINIO_SECRET_KEY, secure=False)
-
     model_path = f"{TMP_DIR}/current_model"
-    os.makedirs(model_path, exist_ok=True)
-
-    objects = client.list_objects(MODEL_BUCKET, prefix="current_model", recursive=True)
-
-    for obj in objects:
-        os.makedirs(model_path, exist_ok=True)
-
-        # Download and save model files
-        data = client.get_object(MODEL_BUCKET, obj.object_name)
-        with open(f"{TMP_DIR}/{obj.object_name}", "wb") as f:
-            shutil.copyfileobj(data, f)
-
+    download_from_minio(
+        bucket=MODEL_BUCKET,
+        prefix_or_key="current_model",
+        dest_dir=model_path,
+        recursive=True
+    )
     print(f"Model downloaded to {model_path}")
 
 def download_data(**kwargs):
     """Download the labeled data for today from MinIO."""
-    client = Minio(MINIO_ENDPOINT, access_key=MINIO_ACCESS_KEY, secret_key=MINIO_SECRET_KEY, secure=False)
     data_path = f"{TMP_DIR}/train_data"
-    os.makedirs(data_path, exist_ok=True)
+    train_data_name = f"label_data/{date_prefix}/posts.json"
 
-    data = client.get_object(DATA_BUCKET, train_data_name)
-    with open(f"{data_path}/tweets.json", "wb") as f:
-        shutil.copyfileobj(data, f)
+    download_from_minio(
+        bucket=DATA_BUCKET,
+        prefix_or_key=train_data_name,
+        dest_dir=data_path,
+        recursive=False
+    )
 
-    print(f"Data downloaded to {data_path}/tweets.json")
+    print(f"Data downloaded to {data_path}/posts.json")
 
 def retrain_model(**kwargs):
     model_dir = "/tmp/current_model"
-    data_path = "/tmp/train_data/tweets.json"
+    data_path = "/tmp/train_data/posts.json"
     save_path = "/tmp/output_model"
 
     tokenizer = AutoTokenizer.from_pretrained(model_dir)
