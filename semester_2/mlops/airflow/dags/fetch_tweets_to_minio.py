@@ -20,7 +20,8 @@ def fetch_tweets(**kwargs):
 
     data = []
     for tweet in tweets.data or []:
-        data.append({"text": tweet.text})
+       data.append({"text": tweet.text})
+
 
     kwargs["ti"].xcom_push(key="tweets", value=data)
 

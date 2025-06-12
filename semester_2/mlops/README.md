@@ -8,6 +8,7 @@ DAGs:
     fetch_tweets_to_minio - get tweets from X and save it to MinIo.
     preprocess_tweets_to_minio - clean tweets.
     retrain_model - get label_data, model from MinIo, retrain model, upload it back MinIo and clean up.
+    filter_to_redis - get todays post, run through model and return withoud useless content.
 
 
 API:

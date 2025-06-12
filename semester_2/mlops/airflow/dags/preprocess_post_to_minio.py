@@ -8,9 +8,11 @@ import re
 import string
 from config import MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, DATA_BUCKET
 
+date_prefix = datetime.utcnow().strftime("%Y-%m-%d")
+client = Minio(endpoint=MINIO_ENDPOINT, access_key=MINIO_ACCESS_KEY, secret_key=MINIO_SECRET_KEY, secure=False)
 
 def clean_text(text):
-    """Clean post text by removing unwanted characters and links."""
+    """Clean the text by removing URLs, mentions, hashtags, and unwanted characters."""
     text = text.lower()
 
     # Delete links, mentions, hashtags
@@ -28,29 +30,23 @@ def clean_text(text):
     return text
 
 
-def preprocess_posts(**kwargs):
-    """Preprocess text by cleaning text and saving to MinIO storage."""
-    date_prefix = datetime.utcnow().strftime("%Y-%m-%d")
+def preprocess_posts(**context):
+    """Load raw posts from MinIO, clean them, and push to XCom."""
     source_path = f"raw_data/twitter/{date_prefix}/tweets.json"
-    dest_path = f"processed_data/twitter/{date_prefix}/cleaned_posts.json"
 
-    client = Minio(
-        endpoint=MINIO_ENDPOINT,
-        access_key=MINIO_ACCESS_KEY,
-        secret_key=MINIO_SECRET_KEY,
-        secure=False
-    )
-
-    # Reading original text
     response = client.get_object(DATA_BUCKET, source_path)
     posts = json.loads(response.read().decode("utf-8"))
 
-    # clean text
-    cleaned = []
-    for p in posts:
-        cleaned.append({"text": clean_text(p["text"])})
+    cleaned = [{"text": clean_text(p["text"])} for p in posts]
 
-    # write to MinIO
+    context["ti"].xcom_push(key="cleaned_posts", value=cleaned)
+
+
+def save_cleaned_posts(**context):
+    """Save cleaned posts to MinIO."""
+    cleaned = context["ti"].xcom_pull(key="cleaned_posts", task_ids="preprocess_posts")
+    dest_path = f"processed_data/{date_prefix}/cleaned_posts.json"
+
     cleaned_bytes = json.dumps(cleaned, indent=2).encode("utf-8")
     client.put_object(
         DATA_BUCKET,
@@ -67,6 +63,7 @@ default_args = {
     "start_date": datetime(2025, 1, 1),
 }
 
+
 with DAG(
     dag_id="preprocess_posts_to_minio",
     default_args=default_args,
@@ -75,8 +72,16 @@ with DAG(
     tags=["minio", "preprocessing"],
 ) as dag:
 
-    preprocess = PythonOperator(
+    preprocess_posts_task = PythonOperator(
         task_id="preprocess_posts",
         python_callable=preprocess_posts,
         provide_context=True,
     )
+
+    save_cleaned_posts_task = PythonOperator(
+        task_id="save_cleaned_posts",
+        python_callable=save_cleaned_posts,
+        provide_context=True,
+    )
+
+    preprocess_posts_task >> save_cleaned_posts_task

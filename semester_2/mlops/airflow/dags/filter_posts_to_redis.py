@@ -6,48 +6,57 @@ import pandas as pd
 import redis
 import joblib
 from minio import Minio
-from config import MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, REDIS_URL, TMP_DIR, MODEL_BUCKET, MODEL_DIR, ENCODER_FILE
+from config import MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, REDIS_URL, TMP_DIR, MODEL_BUCKET, ENCODER_FILE, DATA_BUCKET
 from utils import download_from_minio
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 
-default_args = {
-    'start_date': datetime(2024, 1, 1),
-}
+
+date_prefix = datetime.utcnow().strftime("%Y-%m-%d")
+
+client = Minio(MINIO_ENDPOINT, access_key=MINIO_ACCESS_KEY, secret_key=MINIO_SECRET_KEY, secure=False)
+
+MODEL_PATH = f"{TMP_DIR}/current_model"
 
 
 def download_model(**kwargs):
     """Load the current model from MinIO."""
-    model_path = f"{TMP_DIR}/current_model"
     download_from_minio(
         bucket=MODEL_BUCKET,
         prefix_or_key="current_model",
-        dest_dir=model_path,
+        dest_dir=MODEL_PATH,
         recursive=True
     )
-    print(f"Model downloaded to {model_path}")
+
+    download_from_minio(
+        bucket=MODEL_BUCKET,
+        prefix_or_key=ENCODER_FILE,
+        dest_dir=MODEL_PATH,
+        recursive=True
+    )
+
+    print(f"Model and encoder downloaded to {MODEL_PATH}")
 
 
 def load_posts_from_minio(**kwargs):
     """Load preprocessed posts from MinIO and push to XCom."""
-    client = Minio(MINIO_ENDPOINT, access_key=MINIO_ACCESS_KEY, secret_key=MINIO_SECRET_KEY, secure=False)
 
-    obj = client.get_object(bucket_name="preprocessed", object_name="cleaned_posts.json")
+    obj = client.get_object(bucket_name=DATA_BUCKET, object_name=f"processed_data/{date_prefix}/cleaned_posts.json")
     content = obj.read().decode('utf-8')
     posts = json.loads(content)
 
     kwargs["ti"].xcom_push(key="posts", value=posts)
 
 
-def filter_to_redis(**context):
-    """Фільтрує пости за допомогою моделі та зберігає 'other' у Redis."""
-    posts = context['ti'].xcom_pull(task_ids='load_posts')
+def filter_posts(**context):
+    """Filter posts to 'other' category and save to Redis."""
+    posts = context['ti'].xcom_pull(task_ids='load_posts', key='posts')
     df = pd.DataFrame(posts)
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
-    classifier = pipeline("text-classification", model=model, tokenizer=tokenizer, device=0)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+    model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
+    classifier = pipeline("text-classification", model=model, tokenizer=tokenizer)
 
-    label_encoder = joblib.load(ENCODER_FILE)
+    label_encoder = joblib.load(f"{MODEL_PATH}/{ENCODER_FILE}")
 
     raw_preds = classifier(df['text'].tolist(), truncation=True)
 
@@ -56,11 +65,24 @@ def filter_to_redis(**context):
 
     df_other = df[df['label'] == 'other']
 
-    r = redis.from_url(REDIS_URL)
-    r.set('top_posts', df_other.to_json(orient='records'))
+    context['ti'].xcom_push(key='other_posts', value=df_other.to_dict(orient='records'))
 
     print(f"Saved {len(df_other)} 'other' posts to Redis")
 
+
+def write_posts_redis(**context):
+    """Write filtered posts to Redis."""
+    posts = context['ti'].xcom_pull(task_ids='filter_posts', key='other_posts')
+
+    r = redis.from_url(REDIS_URL)
+    r.set('top_posts', json.dumps(posts))
+
+    print("Saved 'other' posts to Redis")
+
+
+default_args = {
+    'start_date': datetime(2024, 1, 1),
+}
 
 dag = DAG(
     'filter_to_redis',
@@ -80,10 +102,16 @@ with dag:
         python_callable=download_model
     )
 
-    filter_to_redis_task = PythonOperator(
-        task_id='filter_to_redis',
-        python_callable=filter_to_redis,
+    filter_post_task = PythonOperator(
+        task_id='filter_posts',
+        python_callable=filter_posts,
         provide_context=True
     )
 
-    [download_model_task, load_posts_task] >> filter_to_redis_task
+    write_posts_redis_task = PythonOperator(
+        task_id='write_posts_redis',
+        python_callable=write_posts_redis,
+        provide_context=True
+    )
+
+    [download_model_task, load_posts_task] >> filter_post_task >> write_posts_redis_task

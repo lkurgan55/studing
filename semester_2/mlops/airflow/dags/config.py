@@ -14,4 +14,4 @@ MODEL_BUCKET = "model"
 DATA_BUCKET = "training-data"
 TMP_DIR ='/tmp'
 MODEL_DIR = "/tmp/model"
-ENCODER_FILE = f"{MODEL_DIR}/label_encoder.pkl"
+ENCODER_FILE = "label_encoder.pkl"

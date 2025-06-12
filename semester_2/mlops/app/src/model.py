@@ -14,12 +14,7 @@ ENCODER_FILE = os.path.join(MODEL_DIR, "label_encoder.pkl")
 
 def download_model_from_minio():
     """Download the model and label encoder from MinIO storage."""
-    client = Minio(
-        MINIO_ENDPOINT,
-        access_key=MINIO_ACCESS_KEY,
-        secret_key=MINIO_SECRET_KEY,
-        secure=False
-    )
+    client = Minio(MINIO_ENDPOINT, access_key=MINIO_ACCESS_KEY, secret_key=MINIO_SECRET_KEY, secure=False)
 
     os.makedirs(MODEL_DIR, exist_ok=True)
 
@@ -33,7 +28,7 @@ def download_model_from_minio():
         with open(local_path, "wb") as f:
             shutil.copyfileobj(response, f)
 
-    client.fget_object(MODEL_BUCKET, f"{MODEL_PREFIX}label_encoder.pkl", ENCODER_FILE)
+    client.fget_object(MODEL_BUCKET, "label_encoder.pkl", ENCODER_FILE)
 
 download_model_from_minio()
 

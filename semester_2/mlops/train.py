@@ -1,40 +1,44 @@
-
 import json
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from datasets import Dataset
 from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification, TrainingArguments, Trainer
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+import pickle
 
-# Load and prepare dataset
-with open("train_data/merged_data.json", "r", encoding="utf-8") as f:
-    data = json.load(f)
+# Load and prepare datasets
+with open("train_data/train.json", "r", encoding="utf-8") as f:
+    train_data = json.load(f)
 
-df = pd.DataFrame(data)
+with open("train_data/test.json", "r", encoding="utf-8") as f:
+    test_data = json.load(f)
+
+train_df = pd.DataFrame(train_data)
+test_df = pd.DataFrame(test_data)
+
+# Label encoding
 label_encoder = LabelEncoder()
-df["label_id"] = label_encoder.fit_transform(df["label"])
-
-train_texts, val_texts, train_labels, val_labels = train_test_split(
-    df["text"].tolist(), df["label_id"].tolist(), test_size=0.2, random_state=42
-)
+train_df["label_id"] = label_encoder.fit_transform(train_df["label"]) # Fit on training data
+test_df["label_id"] = label_encoder.transform(test_df["label"])
 
 # Tokenization
 tokenizer = DistilBertTokenizerFast.from_pretrained("distilbert-base-uncased")
-train_encodings = tokenizer(train_texts, truncation=True, padding=True)
-val_encodings = tokenizer(val_texts, truncation=True, padding=True)
+train_encodings = tokenizer(train_df["text"].tolist(), truncation=True, padding=True)
+test_encodings = tokenizer(test_df["text"].tolist(), truncation=True, padding=True)
 
-# Prepare Huggingface Datasets
-train_dataset = Dataset.from_dict({**train_encodings, "label": train_labels})
-val_dataset = Dataset.from_dict({**val_encodings, "label": val_labels})
+# Prepare Hugging Face datasets
+train_dataset = Dataset.from_dict({**train_encodings, "label": train_df["label_id"].tolist()})
+val_dataset = Dataset.from_dict({**test_encodings, "label": test_df["label_id"].tolist()})
 
 # Load model
 model = DistilBertForSequenceClassification.from_pretrained(
     "distilbert-base-uncased", num_labels=len(label_encoder.classes_)
 )
 
+# Metric function
 def compute_metrics(pred):
+    """Compute metrics."""
     labels = pred.label_ids
     preds = np.argmax(pred.predictions, axis=1)
     return {
@@ -44,15 +48,16 @@ def compute_metrics(pred):
         "recall": recall_score(labels, preds, average="weighted"),
     }
 
+# Training arguments
 training_args = TrainingArguments(
-    output_dir="./model/saved_model",
+    output_dir="./model",
     num_train_epochs=3,
     per_device_train_batch_size=8,
     per_device_eval_batch_size=8,
-    logging_steps=10,
-    logging_dir="./logs"
+    eval_strategy="no"
 )
 
+# Trainer setup
 trainer = Trainer(
     model=model,
     args=training_args,
@@ -62,9 +67,9 @@ trainer = Trainer(
     tokenizer=tokenizer
 )
 
+# Train model
 trainer.train()
 
 # Save label encoder
-import pickle
 with open("model/label_encoder.pkl", "wb") as f:
     pickle.dump(label_encoder, f)

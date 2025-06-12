@@ -32,9 +32,9 @@ def download_model(**kwargs):
     print(f"Model downloaded to {model_path}")
 
 def download_data(**kwargs):
-    """Download the labeled data for today from MinIO."""
+    """load the labeled data for today from MinIO."""
     data_path = f"{TMP_DIR}/train_data"
-    train_data_name = f"label_data/{date_prefix}/posts.json"
+    train_data_name = f"label_data/{date_prefix}/label_train_data.json"
 
     download_from_minio(
         bucket=DATA_BUCKET,
@@ -46,8 +46,9 @@ def download_data(**kwargs):
     print(f"Data downloaded to {data_path}/posts.json")
 
 def retrain_model(**kwargs):
+    """Retrain the model using the downloaded data."""
     model_dir = "/tmp/current_model"
-    data_path = "/tmp/train_data/posts.json"
+    data_path = "/tmp/train_data/label_train_data.json"
     save_path = "/tmp/output_model"
 
     tokenizer = AutoTokenizer.from_pretrained(model_dir)
@@ -65,12 +66,10 @@ def retrain_model(**kwargs):
     train_dataset = Dataset.from_dict({**train_encodings, "label": train_labels})
 
     args = TrainingArguments(
-        output_dir=save_path,
         num_train_epochs=3,
         per_device_train_batch_size=8,
         per_device_eval_batch_size=8,
         logging_steps=10,
-        logging_dir="./logs"
     )
 
     trainer = Trainer(model=model, args=args, train_dataset=train_dataset)

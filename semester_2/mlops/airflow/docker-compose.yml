@@ -17,6 +17,8 @@ x-airflow-common:
     - ./.env:/opt/airflow/.env
   depends_on:
     - postgres
+  networks:
+      - mlops-net
 
 services:
   postgres:
@@ -29,6 +31,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mlops-net
 
   airflow-init:
     <<: *airflow-common
@@ -74,6 +78,8 @@ services:
         mc mb -p local/model || true;
         mc ls local;
         exit 0;"
+    networks:
+      - mlops-net
 
   redis:
     image: redis:7
