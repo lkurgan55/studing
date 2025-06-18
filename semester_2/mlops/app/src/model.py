@@ -1,46 +1,31 @@
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
+import mlflow
 import joblib
-from minio import Minio
-import os, shutil
+from transformers import pipeline
+import os
 
-MINIO_ENDPOINT = "minio:9000"
-MINIO_ACCESS_KEY = "admin"
-MINIO_SECRET_KEY = "admin123"
-MODEL_BUCKET = "model"
-MODEL_PREFIX = "current_model/"
-MODEL_DIR = "/tmp/model"
-ENCODER_FILE = os.path.join(MODEL_DIR, "label_encoder.pkl")
+# === Налаштування ===
+MODEL_NAME = "text-model"
+MODEL_ALIAS = "champion"
+MLFLOW_TRACKING_URI = "http://localhost:5000"
+ENCODER_PATH = "encoder/label_encoder.pТаkl"
 
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
-def download_model_from_minio():
-    """Download the model and label encoder from MinIO storage."""
-    client = Minio(MINIO_ENDPOINT, access_key=MINIO_ACCESS_KEY, secret_key=MINIO_SECRET_KEY, secure=False)
+# === Завантажити модель як pipeline-ready об’єкт
+model_uri = f"models:/{MODEL_NAME}/{MODEL_ALIAS}"
+model_pipeline = mlflow.transformers.load_model(model_uri)
 
-    os.makedirs(MODEL_DIR, exist_ok=True)
+# === Завантажити енкодер як об’єкт (через артефакт)
+encoder_path = mlflow.artifacts.download_artifacts(
+    model_uri=model_uri,
+    artifact_path=ENCODER_PATH
+)
 
-    objects = client.list_objects(MODEL_BUCKET, prefix=MODEL_PREFIX, recursive=True)
-    for obj in objects:
-        rel_path = obj.object_name.replace(MODEL_PREFIX, "")
-        local_path = os.path.join(MODEL_DIR, rel_path)
-        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+label_encoder = joblib.load(encoder_path)
 
-        response = client.get_object(MODEL_BUCKET, obj.object_name)
-        with open(local_path, "wb") as f:
-            shutil.copyfileobj(response, f)
-
-    client.fget_object(MODEL_BUCKET, "label_encoder.pkl", ENCODER_FILE)
-
-download_model_from_minio()
-
-tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
-label_encoder = joblib.load(ENCODER_FILE)
-
-classifier = pipeline("text-classification", model=model, tokenizer=tokenizer, device=0)
-
+# === Інференс
 def predict(text: str) -> dict:
-    """Predict the label for the given text using the pre-trained model."""
-    result = classifier(text)[0]
+    result = model_pipeline(text)[0]
     label_idx = int(result["label"].replace("LABEL_", ""))
     label = label_encoder.inverse_transform([label_idx])[0]
     return {

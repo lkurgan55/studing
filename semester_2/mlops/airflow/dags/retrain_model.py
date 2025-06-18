@@ -13,12 +13,28 @@ from transformers import Trainer, TrainingArguments, AutoModelForSequenceClassif
 from sklearn.preprocessing import LabelEncoder
 from config import MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MODEL_BUCKET, DATA_BUCKET, TMP_DIR
 from utils import download_from_minio
+import mlflow
+import numpy as np
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+
 
 default_args = {
     "start_date": datetime(2023, 1, 1),
 }
 
 date_prefix = datetime.utcnow().strftime("%Y-%m-%d")
+
+
+def compute_metrics(pred):
+    """Compute metrics."""
+    labels = pred.label_ids
+    preds = np.argmax(pred.predictions, axis=1)
+    return {
+        "accuracy": accuracy_score(labels, preds),
+        "f1": f1_score(labels, preds, average="weighted"),
+        "precision": precision_score(labels, preds, average="weighted"),
+        "recall": recall_score(labels, preds, average="weighted"),
+    }
 
 def download_model(**kwargs):
     """Load the current model from MinIO."""
@@ -43,7 +59,19 @@ def download_data(**kwargs):
         recursive=False
     )
 
-    print(f"Data downloaded to {data_path}/posts.json")
+    print(f"Data downloaded to {data_path}/label_train_data.json")
+
+    data_path = f"{TMP_DIR}/validation_data"
+    validation_data_name = "validation_data/test.json"
+
+    download_from_minio(
+        bucket=DATA_BUCKET,
+        prefix_or_key=validation_data_name,
+        dest_dir=data_path,
+        recursive=False
+    )
+
+    print(f"Data downloaded to {data_path}/test.json")
 
 def retrain_model(**kwargs):
     """Retrain the model using the downloaded data."""
@@ -66,25 +94,44 @@ def retrain_model(**kwargs):
     train_dataset = Dataset.from_dict({**train_encodings, "label": train_labels})
 
     args = TrainingArguments(
+        output_dir="/tmp/training_logs",
         num_train_epochs=3,
         per_device_train_batch_size=8,
         per_device_eval_batch_size=8,
         logging_steps=10,
+        save_total_limit=1,
+        save_strategy="no"
     )
 
-    trainer = Trainer(model=model, args=args, train_dataset=train_dataset)
-    trainer.train()
+    mlflow.set_tracking_uri("http://mlflow:5000")
+    mlflow.set_experiment("text-classification")
 
-    print("Model retraining completed. Saving the model...")
+    with mlflow.start_run():
+        mlflow.log_param("num_train_epochs", args.num_train_epochs)
+        mlflow.log_param("batch_size", args.per_device_train_batch_size)
 
-    Path(save_path).mkdir(parents=True, exist_ok=True)
-    model.save_pretrained(save_path)
-    tokenizer.save_pretrained(save_path)
+        trainer = Trainer(
+            model=model,
+            args=args,
+            train_dataset=train_dataset,
+            compute_metrics=compute_metrics
+        )
+        trainer.train()
 
-    with open(os.path.join(save_path, "label_encoder.pkl"), "wb") as f:
-        pickle.dump(label_encoder, f)
+        preds = trainer.predict(train_dataset).predictions.argmax(axis=1)
+        acc = accuracy_score(train_labels, preds)
+        mlflow.log_metric("accuracy", acc)
 
-    print(f"Model saved to {save_path}")
+        Path(save_path).mkdir(parents=True, exist_ok=True)
+        model.save_pretrained(save_path)
+        tokenizer.save_pretrained(save_path)
+
+        with open(os.path.join(save_path, "label_encoder.pkl"), "wb") as f:
+            pickle.dump(label_encoder, f)
+
+        mlflow.log_artifact(os.path.join(save_path, "label_encoder.pkl"))
+
+        print(f"Model retrained and logged to MLflow. Accuracy: {acc:.4f}")
 
 
 def upload_model(**kwargs):
@@ -108,7 +155,8 @@ def upload_model(**kwargs):
 def cleanup_temp_dirs(**kwargs):
     paths = [
         "/tmp/output_model",
-        "/tmp/train_data"
+        "/tmp/train_data",
+        "/tmp/validation_data",
     ]
 
     for path in paths:

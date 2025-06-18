@@ -76,6 +76,7 @@ services:
         mc alias set local http://minio:9000 admin admin123;
         mc mb -p local/training-data || true;
         mc mb -p local/model || true;
+        mc mb -p local/mlflow || true;
         mc ls local;
         exit 0;"
     networks:
@@ -89,9 +90,50 @@ services:
     networks:
       - mlops-net
 
+  postgres-mlflow:
+    image: postgres:12
+    container_name: postgres-mlflow
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=mlflow_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data_mlflow:/var/lib/postgresql/data
+    networks:
+      - mlops-net
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    container_name: mlflow
+    depends_on:
+      - postgres-mlflow
+      - minio
+    environment:
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: admin123
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlflow_data:/mlflow
+    command: >
+      mlflow server
+      --backend-store-uri postgresql+psycopg2://postgres:postgres@postgres-mlflow:5432/mlflow_db
+      --default-artifact-root s3://mlflow/
+      --host 0.0.0.0
+      --port 5000
+    networks:
+      - mlops-net
+
 volumes:
   minio_data:
   postgres_data:
+  mlflow_data:
+  postgres_data_mlflow:
 
 networks:
   mlops-net:
