@@ -15,3 +15,6 @@ DATA_BUCKET = "training-data"
 TMP_DIR ='/tmp'
 MODEL_DIR = "/tmp/model"
 ENCODER_FILE = "label_encoder.pkl"
+MODEL_NAME = "antispam-text-model"
+MODEL_ALIAS = "champion"
+REGISTER_NAME = "antispam-text-model"
