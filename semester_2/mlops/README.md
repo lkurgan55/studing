@@ -17,3 +17,7 @@ API:
 ARCH
 
 ![Architecture Diagram](arch.png)
+
+$env:MLFLOW_S3_ENDPOINT_URL = "http://localhost:9000"
+$env:AWS_SECRET_ACCESS_KEY = "admin123"
+$env:AWS_ACCESS_KEY_ID = "admin"
