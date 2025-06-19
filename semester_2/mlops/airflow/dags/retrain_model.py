@@ -21,6 +21,7 @@ default_args = {
 date_prefix = datetime.utcnow().strftime("%Y-%m-%d")
 
 def compute_metrics(pred):
+    """Compute metrics for model evaluation."""
     labels = pred.label_ids
     preds = np.argmax(pred.predictions, axis=1)
     return {
@@ -35,7 +36,7 @@ def download_data(**kwargs):
     train_data_path = f"{TMP_DIR}/train_data"
     validation_data_path = f"{TMP_DIR}/validation_data"
 
-    download_from_minio(DATA_BUCKET, f"label_data/{date_prefix}/label_train_data.json", train_data_path)
+    download_from_minio(DATA_BUCKET, f"train_label_data/{date_prefix}/label_train_data.json", train_data_path)
     download_from_minio(DATA_BUCKET, "validation_data/validation_data.json", validation_data_path)
 
     print("Data downloaded successfully.")
@@ -66,6 +67,15 @@ def retrain_model(**kwargs):
     train_encodings = tokenizer(texts, truncation=True, padding=True)
     train_dataset = Dataset.from_dict({**train_encodings, "label": train_labels})
 
+    with open(f"{TMP_DIR}/validation_data/validation_data.json", "r") as f:
+        val_raw = json.load(f)
+    val_texts = [x["text"] for x in val_raw]
+    val_labels = [x["label"] for x in val_raw]
+    val_labels_encoded = [label_encoder[label] for label in val_labels]
+
+    val_encodings = tokenizer(val_texts, truncation=True, padding=True)
+    val_dataset = Dataset.from_dict({**val_encodings, "label": val_labels_encoded})
+
     # MLflow setup
     mlflow.set_tracking_uri("http://mlflow:5000")
     mlflow.set_experiment("antispam-text-classification")
@@ -84,12 +94,13 @@ def retrain_model(**kwargs):
             model=model,
             args=training_args,
             train_dataset=train_dataset,
+            eval_dataset=val_dataset,
             compute_metrics=compute_metrics,
             tokenizer=tokenizer,
         )
         trainer.train()
 
-        # # Save model + tokenizer + encoder
+        # Save model + tokenizer + encoder
         output_path = "/tmp/output_model"
         model.save_pretrained(output_path)
         tokenizer.save_pretrained(output_path)
@@ -103,19 +114,24 @@ def retrain_model(**kwargs):
             task="text-classification",
             signature=None
         )
-        mlflow.log_artifact(os.path.join(output_path, "label_encoder.pkl"), artifact_path="components/encoder")
 
-            # Реєстрація в Model Registry
+        eval_results = trainer.evaluate()
+        for k, v in eval_results.items():
+            mlflow.log_metric(k, v)
+
+        mlflow.log_artifact(os.path.join(output_path, "label_encoder.pkl"), artifact_path="model/components/encoder")
+
         mlflow.register_model(
             model_uri=model_info.model_uri,
             name=REGISTER_NAME
         )
 
-        print("✅ Model retrained and logged to MLflow")
+        print("Model retrained and logged to MLflow")
+
 
 def cleanup_temp_dirs(**kwargs):
+    """Cleanup temporary directories used for training and validation data."""
     paths = [
-        f"{TMP_DIR}/output_model",
         f"{TMP_DIR}/train_data",
         f"{TMP_DIR}/validation_data",
         f"{TMP_DIR}/training_logs",
