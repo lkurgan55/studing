@@ -19,7 +19,7 @@ def predict(text: str) -> dict:
     """Predict the label for a given text using the loaded model."""
     result = classifier(text)[0]
     label_idx = int(result["label"].replace("LABEL_", ""))
-    label = id_to_label[label_idx]
+    label = id_to_label.get(label_idx, 'other')
     return {
         "label": label,
         "score": round(result["score"], 4)

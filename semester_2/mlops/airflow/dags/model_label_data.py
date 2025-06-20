@@ -58,7 +58,7 @@ def classify_and_save(**kwargs):
     df = pd.DataFrame(posts)
 
     preds = classifier(df["text"].tolist(), truncation=True)
-    df["label"] = [id_to_label[int(p["label"].replace("LABEL_", ""))] for p in preds]
+    df["label"] = [id_to_label.get(int(p["label"].replace("LABEL_", "")), 'other') for p in preds]
     df["score"] = [p["score"] for p in preds]
 
     out_path = f"{TMP_DIR}/label_data_{alias}.json"

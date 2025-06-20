@@ -53,7 +53,7 @@ def filter_posts(**context):
 
     raw_preds = classifier(df['text'].tolist(), truncation=True)
 
-    pred_labels = [id_to_label[int(pred["label"].replace("LABEL_", ""))] for pred in raw_preds]
+    pred_labels = [id_to_label.get(int(pred["label"].replace("LABEL_", "")), 'other') for pred in raw_preds]
 
     df['label'] = pred_labels
 
